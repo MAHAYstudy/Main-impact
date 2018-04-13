@@ -5,7 +5,7 @@ set more off
 
 * SET GLOBAL MACROS for path to main directories
 
-global d= 3
+global d= 8
 	if $d==1 {
 	* "Karl"
 	}
@@ -262,7 +262,7 @@ lab var bd_timesate "meal frequency, past 24h";
 
 
     * morbidity only 2016;
-global fam3 " morb_2days morb_3days morb_7days";
+global fam3 "morb_2days morb_3days morb_7days" ;
 global fam4 "learningop playobj totbook home_score2 role_health role_teach depend_health depend_intel ladder_health ladder_intel";
 
 
@@ -277,6 +277,7 @@ global controls "i.mother_educ i.wealth_qui i.birth_order mother_age";
 ********************************************************************************
 * FOCUS ON THE TARGET CHILD. separate analysis/do file on the younger sibling in 2016 (targeted=0) 
 *******************************************************************************;
+#delimit ;
 drop	 if targeted==0 & year==2016;
 
 	* panel set up to create baseline outcomes baseline;
@@ -545,67 +546,68 @@ rename asqAllScore_sresid asq_all_sr;
 */;
 
 
-* only output ITT effects for: haz, [waz, whz], stunting, severe stunting, asq (total and subdomains) 
+* only output ITT effects for: haz, stunting, severe stunting, [waz, whz], asq (total and subdomains) 
+* ASQ - Gross, fine, PS, SED, CS
 * rearranging so that outputs all outcomes in a table basic, covariate, baseline adjusted
 
 * for family of outcomes 1 and 4 control for baseline outcomes;
-#delimit ;
-set more off;
-estimates clear;
+
+set more off
+estimates clear
 
 * THIS MIGHT BE AN ISSUE. If so: rename to controls1. Or, manually type in these contols instead of '$controls'
 * set global controls;
 
-global controls "i.mother_educ i.wealth_qui i.birth_order mother_age";
+global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 
 * BASIC TABLE;
 
-foreach num of numlist 1 5 {;
-estimates clear;
-loc ftest ;
-loc eqtest ;
-loc means ;
-loc sds ;
-foreach var of varlist ${fam`num'} {;
+foreach num of numlist 1 5 {
+estimates clear
+loc ftest 
+loc eqtest 
+loc median 
+loc IQR 
+foreach var of varlist ${fam`num'} {
 		*0 BASIC - Unadjusted for controls;
-		eststo `var'_Basic: reg `var'  i.treatment  male infant_age_months i.region if year==2016,  robust cl(grappe);
-		qui sum `var' if year==2016 & treatment==0;
-		estadd scalar mean = r(mean) ;
-		estadd scalar sd = r(sd) ;
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment;
-		estadd scalar ftest= round(r(p),.001);
-		test 1.treatment =2.treatment =3.treatment =4.treatment;
-		estadd scalar eqtest = round(r(p),.001);
+		eststo `var'_Basic: reg `var'  i.treatment  male infant_age_months i.region if year==2016,  robust cl(grappe)
+		qui sum `var' if year==2016 & treatment==0, de 
+		estadd scalar median = r(p50) 
+		estadd scalar IQR = r(p75)-r(p25) 
+		testparm 1.treatment 2.treatment 3.treatment 4.treatment
+		estadd scalar ftest= round(r(p),.001)
+		test 1.treatment =2.treatment =3.treatment =4.treatment
+		estadd scalar eqtest = round(r(p),.001)
 		
-		};
-		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment)
-		stats(r2 N mean sd ftest eqtest, fmt(%9.3f %9.0g)) 
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) ;
-		};
+		}
+		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
+		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
+		}
 			
 * COVARIATE TABLE		;
 
-foreach num of numlist 1 5 {;
-estimates clear;
-loc ftest ;
-loc eqtest ;
-loc means ;
-loc sds ;
-foreach var of varlist ${fam`num'} {;
+foreach num of numlist 1 5 {
+estimates clear
+loc ftest 
+loc eqtest 
+loc median  
+loc IQR  
+foreach var of varlist ${fam`num'} {
 		*1 COVARIATE - Adjusted with controls;
-		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) ;
-		qui sum `var' if year==2016 & treatment==0;
-		estadd scalar mean = r(mean) ;
-		estadd scalar sd = r(sd) ;
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment;
-		estadd scalar ftest= round(r(p),.001);
-		test 1.treatment =2.treatment =3.treatment =4.treatment;
-		estadd scalar eqtest = round(r(p),.001);
-				};
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment)
-		stats(r2 N mean sd ftest eqtest, fmt(%9.3f %9.0g)) 
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) ;
-		};
+		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
+		qui sum `var' if year==2016 & treatment==0
+		estadd scalar median = r(p50) 
+		estadd scalar IQR = r(p75)-r(p25) 
+		testparm 1.treatment 2.treatment 3.treatment 4.treatment
+		estadd scalar ftest= round(r(p),.001)
+		test 1.treatment =2.treatment =3.treatment =4.treatment
+		estadd scalar eqtest = round(r(p),.001)
+				}
+		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
+		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
+		}
 			
 
 * BASELINE-ADJUSTED TABLE;

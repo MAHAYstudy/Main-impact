@@ -194,10 +194,10 @@ ta infant_age_months if year==2016 & targeted!=0
 *******************************************************************************
 * GLOBAL LIST OF FAMILY OF OUTCOMES;
 *******************************************************************************;
-#delimit ;
- recode bf_bfstart 8=. 9=.;
- recode bf_colust  9=.;
- recode bf_1sthr 8=. 98=.;
+
+ recode bf_bfstart 8=. 9=.
+ recode bf_colust  9=.
+ recode bf_1sthr 8=. 98=.
 
   
 /*CHECK anemia cutoffs to be moved to the infant create all.do file (cutoff from baseline infant do);
@@ -217,89 +217,87 @@ replace anemia_=3 if hemoglobin<7 & hemoglobin!=.;
 */;
 
 * May 27 modification - add in wfaz wfhz, split asq into 5th family;
-#delimit ;
-* final outcomes; 
-global fam1 "hfaz stunted sevstunted wfaz wflz hemoglobin ";
-lab var hfaz "height/age zscore";
-lab var stunted "stunted";
-lab var sevstunted "sev.stunted";
-lab var wfaz "weight/age zscore";
-lab var wflz "weight/length zscore";
-lab var hemoglob "hemoglobin";
-* need to create anemia;
-global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr  asq_comm_sr  asq_all_sr ";
-lab var asqScore_gross_sresid "gross motor skills";
-lab var asqScore_fine_sresid "fine motor skills";
-lab var asqScore_probres_sresid "problem solving skills";
-lab var asqScore_social_sresid "socio-emotional dev";
-lab var asqScore_comm_sresid "communication skills";
-lab var asqAllScore_sresid "ASQ score, stdres";
-rename asqScore_gross_sresid asq_gross_sr;
-rename asqScore_fine_sresid asq_fine_sr;
-rename asqScore_probres_sresid asq_pres_sr;
-rename asqScore_social_sresid asq_soc_sr;
-rename asqScore_comm_sresid asq_comm_sr;
-rename asqAllScore_sresid asq_all_sr;
 
+* final outcomes;
+global fam1 "hfaz stunted sevstunted wfaz wflz hemoglobin "
+lab var hfaz "height/age zscore"
+lab var stunted "stunted"
+lab var sevstunted "sev.stunted"
+lab var wfaz "weight/age zscore"
+lab var wflz "weight/length zscore"
+lab var hemoglob "hemoglobin"
+* need to create anemia
+global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr  asq_comm_sr  asq_all_sr "
+lab var asqScore_gross_sresid "gross motor skills"
+lab var asqScore_fine_sresid "fine motor skills"
+lab var asqScore_probres_sresid "problem solving skills"
+lab var asqScore_social_sresid "socio-emotional dev"
+lab var asqScore_comm_sresid "communication skills"
+lab var asqAllScore_sresid "ASQ score, stdres"
+rename asqScore_gross_sresid asq_gross_sr
+rename asqScore_fine_sresid asq_fine_sr
+rename asqScore_probres_sresid asq_pres_sr
+rename asqScore_social_sresid asq_soc_sr
+rename asqScore_comm_sresid asq_comm_sr
+rename asqAllScore_sresid asq_all_sr
 
-#delimit ;
 
 *intermediate indicators;
 		*2: breastefeeding, appetite and food diversity;
 		* Removing breastfeeding (Oct 20) br_size bf_still bf_colustrum bf_1sthr bf_1st3days fd29 legumes_24h ;
-global fam2 "dairy_24h meat_egg_24h vitA_24h  divers_24h bd_timesate";
-lab var br_size "birth size";
-lab var bf_still "still breastfeeding";
-lab var bf_1sthr "breatfed during first hour";
-lab var bf_1st3days "breasfed 1-3rd day";
-lab var fd29 "appetite";
-lab var legumes_24h "legumes, past 24h";
-lab var dairy_24h "dairy, past 24h";
-lab var meat_egg_24h "proteins, past 24h";
-lab var vitA_24h "vit A, past 24h";
-lab var divers_24h "food diversity, past 24h";
-lab var bd_timesate "meal frequency, past 24h";
+global fam2 "dairy_24h meat_egg_24h vitA_24h  divers_24h bd_timesate"
+lab var br_size "birth size"
+lab var bf_still "still breastfeeding"
+lab var bf_1sthr "breatfed during first hour"
+lab var bf_1st3days "breasfed 1-3rd day"
+lab var fd29 "appetite"
+lab var legumes_24h "legumes, past 24h"
+lab var dairy_24h "dairy, past 24h"
+lab var meat_egg_24h "proteins, past 24h"
+lab var vitA_24h "vit A, past 24h"
+lab var divers_24h "food diversity, past 24h"
+lab var bd_timesate "meal frequency, past 24h"
 
 
-    * morbidity only 2016;
-global fam3 "morb_2days morb_3days morb_7days" ;
-global fam4 "learningop playobj totbook home_score2 role_health role_teach depend_health depend_intel ladder_health ladder_intel";
+    * morbidity only 2016
+global fam3 "morb_2days morb_3days morb_7days" 
+global fam4 "learningop playobj totbook home_score2 role_health role_teach depend_health depend_intel ladder_health ladder_intel"
 
 
 	* variables available only in 2016;
-	foreach var of varlist $fam3 asq_gross_sr role_health role_teach depend_health depend_intel ladder_health ladder_intel {;
-	display "outcome=`var'";
-	replace `var'=-99 if `var'==. & year<2016;
-	};
+	foreach var of varlist $fam3 asq_gross_sr role_health role_teach depend_health depend_intel ladder_health ladder_intel {
+	display "outcome=`var'"
+	replace `var'=-99 if `var'==. & year<2016
+	}
 
-global controls "i.mother_educ i.wealth_qui i.birth_order mother_age";
+global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 	
 ********************************************************************************
 * FOCUS ON THE TARGET CHILD. separate analysis/do file on the younger sibling in 2016 (targeted=0) 
 *******************************************************************************;
-#delimit ;
-drop	 if targeted==0 & year==2016;
+
+drop	 if targeted==0 & year==2016
 
 	* panel set up to create baseline outcomes baseline;
 	* there is one idmen missing info;
-	bys idmen year: keep if _n==1;
-	tsset idmen year;
+	bys idmen year: keep if _n==1
+	tsset idmen year
 	
-	#delimit ;
-	
-	
-* baseline vars are BL`var';
-foreach num in 1 2 4 5 {;
-	foreach var of varlist ${fam`num'} {;
-		g d`var'=L2.`var' if year==2016;
-		*replace d`var'=L.`var' if year==2015;
-		egen BL`var' = mean(d`var'), by(idmen);
-		drop d`var';
-		};
-};
+
 	
 	
-di "now start itt";
+* baseline vars are BL`var'
+foreach num in 1 2 4 5 {
+	foreach var of varlist ${fam`num'} {
+		g d`var'=L2.`var' if year==2016
+		*replace d`var'=L.`var' if year==2015
+		egen BL`var' = mean(d`var'), by(idmen)
+		drop d`var'
+		}
+}
+	
+	
+di "now start itt"
 
 * Nov 7 recode region into two groups:
 recode region (4=1) (2=0) (3=0) (5=0) , gen(hautep)
@@ -513,24 +511,21 @@ foreach var of varlist ${fam`num'} {;
 *-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------;
 *--------------------------------------TABLE 2 ITT INFANT----------------------------------------------------;
 
-* edit fams to include only what we want to output
-* Nov 7 modifications - deleted everything that won't be in final tables
-* fam 1 removed hemoglobin - Feb 20: added back
-* fam 5 removed (nothing yet)
-
-#delimit ;
-* final outcomes; 
-
-global fam1 "hfaz stunted sevstunted wfaz wflz hemoglobin";
-lab var hfaz "height/age zscore";
-lab var stunted "stunted";
-lab var sevstunted "sev.stunted";
-lab var wfaz "weight/age zscore";
-lab var wflz "weight/length zscore";
 
 
 
-global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr ";
+* final outcomes
+
+global fam1 "hfaz stunted sevstunted wfaz wflz hemoglobin"
+lab var hfaz "height/age zscore"
+lab var stunted "stunted"
+lab var sevstunted "sev.stunted"
+lab var wfaz "weight/age zscore"
+lab var wflz "weight/length zscore"
+
+global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr "
+
+
 /*lab var asqScore_gross_sresid "gross motor skills";
 lab var asqScore_fine_sresid "fine motor skills";
 lab var asqScore_probres_sresid "problem solving skills";
@@ -560,7 +555,7 @@ estimates clear
 
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 
-* BASIC TABLE;
+* BASIC TABLE
 
 foreach num of numlist 1 5 {
 estimates clear
@@ -582,10 +577,12 @@ foreach var of varlist ${fam`num'} {
 		}
 		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
 		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
+		cells(b(star fmt(%9.3f) label(Coef.)) ///
+			  ci(fmt(3) label(CI) par)) 
 		}
+
 			
-* COVARIATE TABLE		;
+* COVARIATE TABLE		
 
 foreach num of numlist 1 5 {
 estimates clear
@@ -608,34 +605,35 @@ foreach var of varlist ${fam`num'} {
 		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
+		
 			
 
-* BASELINE-ADJUSTED TABLE;
+* BASELINE-ADJUSTED TABLE
 
-foreach num of numlist 1 5 {;
-estimates clear;
-loc ftest ;
-loc eqtest ;
-loc means ;
-loc sds ;
-foreach var of varlist ${fam`num'} {;	
-		*2 BASELINE - adjusted with controls and baseline outcomes;
-		eststo `var'_Add_BL: reg `var' male i.treatment infant_age_months i.region $controls BL`var' if year==2016, robust cl(grappe) ;
-		qui sum `var' if year==2016 & treatment==0;
-		estadd scalar mean = r(mean) ;
-		estadd scalar sd = r(sd) ;
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment;
-		estadd scalar ftest= round(r(p),.001);
-		test 1.treatment =2.treatment =3.treatment =4.treatment;
-		estadd scalar eqtest = round(r(p),.001);
-	};
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment)
-		stats(r2 N mean sd ftest eqtest, fmt(%9.3f %9.0g)) 
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) ;		
-};
-#delimit ;
-set more off;
-estimates clear;
+foreach num of numlist 1 5 {
+estimates clear
+loc ftest 
+loc eqtest 
+loc median 
+loc IQR 
+foreach var of varlist ${fam`num'} {
+		*2 BASELINE - adjusted with controls and baseline outcomes
+		eststo `var'_Add_BL: reg `var' male i.treatment infant_age_months i.region $controls BL`var' if year==2016, robust cl(grappe)
+		qui sum `var' if year==2016 & treatment==0
+		estadd scalar median = r(p50) 
+		estadd scalar IQR = r(p75)-r(p25)  
+		testparm 1.treatment 2.treatment 3.treatment 4.treatment
+		estadd scalar ftest= round(r(p),.001)
+		test 1.treatment =2.treatment =3.treatment =4.treatment
+		estadd scalar eqtest = round(r(p),.001)
+	}
+		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment)///
+		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) ;	
+}
+
+set more off
+estimates clear
 
 
 

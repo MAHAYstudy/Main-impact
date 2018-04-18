@@ -159,7 +159,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/"
+	global TABLES "${Mada}analysis/tables/" //"/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -247,7 +247,7 @@ global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	
 *intermediate indicators: Fam 2 3 4
 *Fam 2 Variables: breastefeeding, appetite and food diversity
-global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h bd_timesate"
+global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h divers_gt4"
 	lab var br_size "birth size"
 	lab var bf_still "still breastfeeding"
 	lab var bf_1sthr "breatfed during first hour"
@@ -259,6 +259,7 @@ global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h bd_timesate"
 	lab var vitA_24h "vit A, past 24h"
 	lab var divers_24h "food diversity, past 24h"
 	lab var bd_timesate "meal frequency, past 24h"
+	* divers_gt4 Child 6-12 mo received foods from 4 or more food groups in past 24hr
 *Fam 3 Variables: * morbidity only 2016
 global fam3 "morb_2days morb_3days morb_7days"
 	label var morb_2days "Morbidity, Past 2 days"

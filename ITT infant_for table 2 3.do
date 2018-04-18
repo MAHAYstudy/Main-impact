@@ -159,7 +159,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "${Mada}analysis/tables/" //"/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -277,6 +277,8 @@ global fam4 "learningop playobj totbook home_score2 role_health role_teach depen
 	label var depend_intel "Affect Intel?"
 	label var ladder_health "Health Status"
 	label var ladder_intel "Intel Status"
+*Fam 6 : For table 3 , second half
+global fam6 "hygiene_score knowledge_score mddw_score home_score2 foodSecurityIHS"
 		
 *Controls	
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
@@ -302,7 +304,7 @@ foreach num in 1 2 4 5 {
 
 * BASIC TABLE
 
-foreach num of numlist 1 5 {
+foreach num of numlist 1 5{
 estimates clear
 foreach var of varlist ${fam`num'} {
 		*0 BASIC - Unadjusted for controls;
@@ -375,7 +377,7 @@ estimates clear
 
 * BASIC TABLE
 
-foreach num of numlist 2 3 4 {
+foreach num of numlist 2 3 4 6 {
 estimates clear
 foreach var of varlist ${fam`num'} {
 		*0 BASIC - Unadjusted for controls;
@@ -398,7 +400,7 @@ foreach var of varlist ${fam`num'} {
 			
 * COVARIATE TABLE		
 
-foreach num of numlist 2 3 4 {
+foreach num of numlist 2 3 4 6 {
 estimates clear 
 foreach var of varlist ${fam`num'} {
 		*1 COVARIATE - Adjusted with controls;

@@ -159,7 +159,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/"
+	global TABLES "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/"
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -209,16 +209,7 @@ rename asqScore_social_sresid asq_soc_sr
 rename asqScore_comm_sresid asq_comm_sr
 rename asqAllScore_sresid asq_all_sr
 	
-	
-* baseline vars are BL`var'
-foreach num in 1 2 4 5 {
-	foreach var of varlist ${fam`num'} {
-		g d`var'=L2.`var' if year==2016
-		*replace d`var'=L.`var' if year==2015
-		egen BL`var' = mean(d`var'), by(idmen)
-		drop d`var'
-		}
-}
+
 	
 
 	
@@ -253,10 +244,19 @@ global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	label var asq_pres_sr "Problem Solving"
 	label var asq_soc_sr  "Socio-Emo Dev"
 	label var asq_comm_sr  "Comm. Skills"
-	
+		
 *Controls	
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
-
+   	
+* baseline vars are BL`var'
+foreach num in 1 5 {
+	foreach var of varlist ${fam`num'} {
+		g d`var'=L2.`var' if year==2016
+		*replace d`var'=L.`var' if year==2015
+		egen BL`var' = mean(d`var'), by(idmen)
+		drop d`var'
+		}
+}
 *-------------------------------------  FINAL  TABLES -------------------------------------------------------
 *-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------
 *--------------------------------------TABLE 2 ITT INFANT----------------------------------------------------
@@ -279,7 +279,7 @@ foreach var of varlist ${fam`num'} {
 		}
 		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
 		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
-		cells(b(star fmt(%9.3f) label(Coef.)) ///
+		cells(b(star fmt(3) label(Coef.)) ///
 			  ci(fmt(3) label(CI) par)) 
 		}
 
@@ -291,7 +291,7 @@ estimates clear
 foreach var of varlist ${fam`num'} {
 		*1 COVARIATE - Adjusted with controls;
 		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
-		qui sum `var' if year==2016 & treatment==0
+		qui sum `var' if year==2016 & treatment==0, de
 		estadd scalar median = r(p50) 
 		estadd scalar IQR = r(p75)-r(p25) 
 		testparm 1.treatment 2.treatment 3.treatment 4.treatment
@@ -310,24 +310,20 @@ foreach var of varlist ${fam`num'} {
 
 foreach num of numlist 1 5 {
 estimates clear
-loc ftest 
-loc eqtest 
-loc median 
-loc IQR 
 foreach var of varlist ${fam`num'} {
 		*2 BASELINE - adjusted with controls and baseline outcomes
 		eststo `var'_Add_BL: reg `var' male i.treatment infant_age_months i.region $controls BL`var' if year==2016, robust cl(grappe)
-		qui sum `var' if year==2016 & treatment==0
+		qui sum `var' if year==2016 & treatment==0, de
 		estadd scalar median = r(p50) 
 		estadd scalar IQR = r(p75)-r(p25)  
 		testparm 1.treatment 2.treatment 3.treatment 4.treatment
 		estadd scalar ftest= round(r(p),.001)
 		test 1.treatment =2.treatment =3.treatment =4.treatment
 		estadd scalar eqtest = round(r(p),.001)
-	}
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment)///
+		}
+		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
 		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) ;	
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
 }
 
 

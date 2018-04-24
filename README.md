@@ -22,9 +22,9 @@ use balance_baseline_endline_v3.do
 
 
 
-===================================================
-notes for analysis use
-===================================================
+
+######notes for analysis use
+
 
 
 TABLE 3

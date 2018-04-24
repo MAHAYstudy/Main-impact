@@ -21,9 +21,9 @@ use balance_baseline_endline_v3.do
 [ ]include median/IQR and proportions instead of means/s.e.
 
 
-mealprep 
+
 ===================================================
-============notes for analysis use=================
+notes for analysis use
 ===================================================
 
 

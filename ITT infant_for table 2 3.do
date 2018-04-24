@@ -60,11 +60,6 @@ global d= 8
 	global reports "/Users/$user/Box Sync/Madagascar Mahay Data/midline/Reports/infant/"
 	}
 	
-	if $d == 5 {
-	*	Kodjo
-	global Mada "C:\Users\AFLAGAH\Box Sync\Madagascar Mahay Data\"
-	}
-	
 	if $d == 6 {
 	* 	Maria
 	global Mada "/Users/mdieci/Dropbox/Madagascar Mahay Data/"
@@ -97,39 +92,7 @@ global d= 8
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
-	
-	if $d==7 {
-	*  Claire
-	global Mada "/Users/claireboone/Dropbox/Madagascar Mahay Data/"
-	*	Baseline folders
-	gl BL_orig "${Mada}baseline/raw data2014/latest/"
-	gl BL_create "${Mada}baseline/created_data2014/FINAL DATASETS/"
-	gl MAJ_orig "${Mada}midline/Data/MAJ/Original/MAJ_Updated June 2016/"
-	gl who_z "${Mada}WHO igrowup STATA/"
-	
-	*	Midline folders
-	gl MAJ_create "${Mada}midline/Data/MAJ/"
-	gl ML_orig_enf "${Mada}midline/Data/data - original/Data with correct ids/"
-    gl ML_orig_men "${Mada}midline/Data/data - original/Data with correct ids/"
-    gl ML_orig_vil "${Mada}midline/Data/data - original/Data with correct ids/"
-	gl ML_create "${Mada}midline/Data/Created_Data_Midline/FINAL DATASETS/"
 
-	*	Endline folders 
-	gl EL_orig_enf "${Mada}endline/original_data/ENFANT/"
-	gl EL_orig_men "${Mada}endline/original_data/MENAGE/"
-	gl EL_orig_vil "${Mada}endline/original_data/VILLAGE"
-	gl EL_create "${Mada}endline/created_data/"
-	gl EL_MAJ "${Mada}endline/MAJ/"
-	
-	* Admin data
-	gl ADMIN_orig "${Mada}admin_data/"
-	gl ADMIN_create "${Mada}admin_data/created_data/"		
-	
-	** ANALYSIS FOLDERS
-	global TABLES "/Users/claireboone/Desktop/" // "${Mada}analysis/tables/"
-	global GRAPHS "${Mada}analysis/graphs/"
-	global All_create "${Mada}analysis/all_create/"
-	}
 	
 	if $d == 8 {
 	* 	Ling
@@ -175,6 +138,8 @@ capture log close
 
 
 use "${All_create}infant_All", clear
+
+
 
 * age distribution to check (end tail <19 & >38)
 
@@ -277,7 +242,7 @@ global fam4 "learningop playobj totbook home_score2 role_health role_teach depen
 	label var depend_intel "Affect Intel?"
 	label var ladder_health "Health Status"
 	label var ladder_intel "Intel Status"
-*Fam 6 : For table 3 , second half
+*Fam 6 : For table 3 , second half : use only home_score2 in the output table for now
 global fam6 "hygiene_score knowledge_score mddw_score home_score2 foodSecurityIHS"
 		
 *Controls	
@@ -298,6 +263,21 @@ foreach num in 1 2 4 5 {
 		drop d`var'
 		}
 }
+
+*** Save dataset
+	save "${All_create}ITT_table2.dta", replace
+	desc, s
+	
+
+	
+	
+	
+	
+	
+	
+	use "${All_create}table2", clear
+	
+	
 *-------------------------------------  FINAL  TABLES -------------------------------------------------------
 *-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------
 *--------------------------------------TABLE 2 ITT INFANT----------------------------------------------------
@@ -319,7 +299,7 @@ foreach var of varlist ${fam`num'} {
 		
 		}
 		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		stats(r2 r2_a N median IQR ftest eqtest, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ///
 			  ci(fmt(3) label(CI) par)) 
 		}
@@ -330,6 +310,7 @@ foreach var of varlist ${fam`num'} {
 foreach num of numlist 1 5 {
 estimates clear 
 foreach var of varlist ${fam`num'} {
+		
 		*1 COVARIATE - Adjusted with controls;
 		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
 		qui sum `var' if year==2016 & treatment==0, de
@@ -341,11 +322,17 @@ foreach var of varlist ${fam`num'} {
 		estadd scalar eqtest = round(r(p),.001)
 				}
 		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		stats(r2 r2_a N median IQR ftest eqtest, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		
-			
+foreach num of numlist 1 5 {
+estimates clear 
+foreach var of varlist ${fam`num'} {
+		ta `var', row percent
+}
+}
+
 
 * BASELINE-ADJUSTED TABLE
 
@@ -363,7 +350,7 @@ foreach var of varlist ${fam`num'} {
 		estadd scalar eqtest = round(r(p),.001)
 		}
 		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		stats(r2 r2_a N median IQR ftest eqtest, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
 }
 
@@ -392,7 +379,7 @@ foreach var of varlist ${fam`num'} {
 		
 		}
 		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		stats(r2 r2_a N median IQR ftest eqtest, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ///
 			  ci(fmt(3) label(CI) par)) 
 		}
@@ -414,7 +401,7 @@ foreach var of varlist ${fam`num'} {
 		estadd scalar eqtest = round(r(p),.001)
 				}
 		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 N median IQR ftest eqtest, fmt(%9.3f %9.0g)) ///
+		stats(r2 r2_a N median IQR ftest eqtest, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		
@@ -442,3 +429,8 @@ foreach var of varlist ${fam`num'} {
 
 
 estimates clear
+
+
+/*
+second half of table, hygiene_score knowledge_score mddw_score foodSecurityIHS 
+see basic TII female_v6

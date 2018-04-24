@@ -1,5 +1,6 @@
 # Main-impact
 
+
 Ling's working branch on ITT-infant
 
 - Table 2
@@ -22,9 +23,9 @@ use balance_baseline_endline_v3.do
 
 
 
-===================================================
-notes for analysis use
-===================================================
+
+#####notes for analysis use
+
 
 
 TABLE 3
@@ -49,3 +50,4 @@ the baseline_balance_endline_v3 is the most recent dofile that creates the balan
 The format tables are a bit cumbersome. Is there a more straightforward way of extracting the tables?
  
 On the balance tables in RCTs, a useful post from our dev impact blog https://blogs.worldbank.org/impactevaluations/should-we-require-balance-t-tests-baseline-observables-randomized-experiments
+

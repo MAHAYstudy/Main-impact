@@ -1,6 +1,5 @@
 clear
 set more off
-version 13
 
 
 * SET GLOBAL MACROS for path to main directories
@@ -272,32 +271,31 @@ recode mother_educ .=9
 *******************************************************************************;
 * EDITED FOR TABLE2 - fams include only outcomes for IIT paper
 
-#delimit ;
 
 *pr_factor rf_factor apply only to those who are currently breasfed (bf_or_comp==1). none in 2016;
 
 * food diversity;
-egen protein=rsum(fanta4 fanta5 fanta6);
+egen protein=rsum(fanta4 fanta5 fanta6)
 
 * final outcomes; 
 * hygiene and knowledge;
-global fam1 "hhwash knowledge_score";
-global fam2 "mddw foodsecure";
+global fam1 "hhwash knowledge_score"
+global fam2 "mddw foodsecure"
 
 
-/*http://www.fantaproject.org/monitoring-and-evaluation/minimum-dietary-diversity-women-indicator-mddw*/;
-lab var fanta1 "grains";
-lab var fanta2 "pulses";
+/*http://www.fantaproject.org/monitoring-and-evaluation/minimum-dietary-diversity-women-indicator-mddw*/
+lab var fanta1 "grains"
+lab var fanta2 "pulses"
 
-lab var fanta4 "dairy";
-lab var fanta5 "fish/meat/poultry";
-lab var fanta6 "eggs";
-lab var fanta7 "dark green veg";
-lab var fanta8 "vitA fruit/veg";
-lab var fanta9 "other veg";
-lab var fanta10 "other fruit";
-lab var protein "dairy, fish/meat/poultry, eggs";
-lab var mddw "minimum diet diversity score";
+lab var fanta4 "dairy"
+lab var fanta5 "fish/meat/poultry"
+lab var fanta6 "eggs"
+lab var fanta7 "dark green veg"
+lab var fanta8 "vitA fruit/veg"
+lab var fanta9 "other veg"
+lab var fanta10 "other fruit"
+lab var protein "dairy, fish/meat/poultry, eggs"
+lab var mddw "minimum diet diversity score"
 
 
 
@@ -317,9 +315,9 @@ replace ac_currentantenatal=ac_currentantenatal_s if ac_currentantenatal==. & ac
 	
 
 	* panel set up to create baseline outcomes baseline;
-	* there is one idmen missing info;
-	bys idmen year: keep if _n==1;
-	tsset idmen year;
+	* there is no idmen missing info;
+	bys idmen year: keep if _n==1
+	tsset idmen year
 
 /* baseline vars are BL`var';
 foreach num in 1 2 3  {;
@@ -330,9 +328,9 @@ foreach num in 1 2 3  {;
 		drop d`var';
 		};
 };
-*/;	
+*/
 	
-di "now start itt";
+di "now start itt"
 
 	
 *******************************************************************************
@@ -343,9 +341,9 @@ di "now start itt";
 
 
 *1: year loop (for the moment being use only 2016);
-#delimit ;
 
-global controls "i.mother_educ i.wealth_qui i.birth_order mother_age";
+
+global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 *------------------------------------------------------------------------------------------------------------;
 *-------------------------------------ENDLINE RESULTS--------------------------------------------------------;
 *------------------------------------------------------------------------------------------------------------;
@@ -353,12 +351,12 @@ global controls "i.mother_educ i.wealth_qui i.birth_order mother_age";
 * for table 3 - intermediate indicators
 
 	*2: family of outcomes loop;
-forval num=1/2 {;
-estimates clear;
-	display "*------------------------family of outcomes `num'---------------------------------";
+forval num=1/2 {
+estimates clear
+	display "*------------------------family of outcomes `num'---------------------------------"
 	
-	foreach var of varlist ${fam`num'} {;
-		display "outcome=`var'   - basic ITT";
+	foreach var of varlist ${fam`num'} {
+		display "outcome=`var'   - basic ITT"
 			
 			
 		********************************************************************************
@@ -366,28 +364,31 @@ estimates clear;
 		* controlling for covariates: i.mother_educ i.wealth_qui mother_age i.birth_order
 		* (final covariate decision Nov. 8)
 		********************************************************************************;
-			eststo n_`var': reg `var'  i.treatment infant_age_months i.region $controls
-   if year==2016, robust cl(grappe) ;
-			qui sum `var' if e(sample) & program==0;
-			estadd scalar mean_y=r(mean);
-			estadd scalar sd_y=r(sd);
-			testparm 1.treatment 2.treatment 3.treatment 4.treatment ;
-			estadd scalar prog=r(p);
-			test 2.treatment =3.treatment;
-			estadd scalar p_value_2_3=r(p);
-			test 1.treatment = 2.treatment;
-			estadd scalar p_value_1_2=r(p);
-			test 1.treatment = 3.treatment;
-			estadd scalar p_value_1_3=r(p);
-			test 1.treatment = 4.treatment;
-			estadd scalar p_value_1_4=r(p);
-			estadd scalar adjr2=e(r2_a);
+			eststo n_`var': reg `var'  i.treatment infant_sex infant_age_months i.region $controls ///
+   if year==2016, robust cl(grappe) 
+			qui sum `var' if e(sample) & program==0
+			estadd scalar median = r(p50) 
+			estadd scalar IQR = r(p75)-r(p25) 
+			estadd scalar mean_y=r(mean)
+			estadd scalar sd_y=r(sd)
+			testparm 1.treatment 2.treatment 3.treatment 4.treatment 
+			estadd scalar prog=r(p)
+			test 2.treatment =3.treatment
+			estadd scalar p_value_2_3=r(p)
+			test 1.treatment = 2.treatment
+			estadd scalar p_value_1_2=r(p)
+			test 1.treatment = 3.treatment
+			estadd scalar p_value_1_3=r(p)
+			test 1.treatment = 4.treatment
+			estadd scalar p_value_1_4=r(p)
+			estadd scalar adjr2=e(r2_a)
 			
 		
-		};
-		estout using "${TABLES}female_`num'_2016_table3.txt",  replace keep(1.treatment 2.treatment 3.treatment 4.treatment)
-		stats(adjr2 N mean_y sd_y prog p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3f %9.0g)) 
-		cells(b(star fmt(3) label(Coef.)) se(fmt(3) label(SE) par(`"="("'`")""'))) ;
+		}
+		estout using "${TABLES}female_`num'_2016_table3.txt",  replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
+		stats(adjr2 r2 N median IQR mean_y sd_y prog p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3f %9.0g)) ///
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par) ) 
+
 	
 		/*title("Table `num'.  ITT Effects female outcomes, basic", @title)
 		collabels(, none) mlabels(, dep) 
@@ -395,6 +396,6 @@ estimates clear;
 		cells(b(star fmt(3)) se(par)) starlevels(* 0.10 ** 0.05 *** 0.001) 
 		scalars(mean_y sd_y prog p_eq) r2 legend obslast 		
 		addnote("All regressions control for gender/age in months and strata dummies. Standard errors clustered at the village level.") ;*/
-		};
+		}
 		
  

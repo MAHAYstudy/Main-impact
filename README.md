@@ -4,7 +4,7 @@
 Ling's working branch on ITT-infant
 
 - Table 2
-  -[x] stunted & severely stunted as proportion
+ - [x] stunted & severely stunted as proportion
 - Table 3 
   -[x] done using updated variables (criteria non-modified)
   -[x] adjusted for sex

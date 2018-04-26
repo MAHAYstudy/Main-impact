@@ -4,14 +4,14 @@
 Ling's working branch on ITT-infant
 
 - Table 2
-
-  -[x] stunted & severely stunted as proportion
+ - [x] stunted & severely stunted as proportion
+ 
 - Table 3 
-  -[x] done using updated variables (criteria non-modified)
-  -[x] adjusted for sex
-  -[x] CI, Median & IQR
-  -[x]table 3: need to add proportions for binary outcomes (check all the variables)
-  -[ ]table 3: add mealprep
+ - [x] done using updated variables (criteria non-modified)
+ - [x] adjusted for sex
+ - [x] CI, Median & IQR
+ - [x] table 3: need to add proportions for binary outcomes (check all the variables)
+ - [ ] table 3: add mealprep
 
 
 Questions:

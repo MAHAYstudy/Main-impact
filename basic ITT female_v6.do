@@ -282,6 +282,14 @@ egen protein=rsum(fanta4 fanta5 fanta6)
 global fam1 "hhwash knowledge_score"
 global fam2 "mddw foodsecure"
 
+*Fam 6 : For table 3 , second half (home_score2 in ITT infant)
+global fam6 "hygiene_score knowledge_score mddw_score foodSecurityIHS"
+/*
+hygiene_score con
+knowledge_score con
+mddw_score 0-8
+foodSecurityIHS 1-4
+*/
 
 /*http://www.fantaproject.org/monitoring-and-evaluation/minimum-dietary-diversity-women-indicator-mddw*/
 lab var fanta1 "grains"
@@ -351,7 +359,7 @@ global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 * for table 3 - intermediate indicators
 
 	*2: family of outcomes loop;
-forval num=1/2 {
+foreach num of numlist 1 2 6{
 estimates clear
 	display "*------------------------family of outcomes `num'---------------------------------"
 	
@@ -366,7 +374,7 @@ estimates clear
 		********************************************************************************;
 			eststo n_`var': reg `var'  i.treatment infant_sex infant_age_months i.region $controls ///
    if year==2016, robust cl(grappe) 
-			qui sum `var' if e(sample) & program==0
+			qui sum `var' if e(sample) & program==0, de
 			estadd scalar median = r(p50) 
 			estadd scalar IQR = r(p75)-r(p25) 
 			estadd scalar mean_y=r(mean)

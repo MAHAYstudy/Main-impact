@@ -219,17 +219,20 @@ global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h divers_gt4"
 	lab var bf_1st3days "breasfed 1-3rd day"
 	lab var fd29 "appetite"
 	lab var legumes_24h "legumes, past 24h"
-	lab var dairy_24h "dairy, past 24h"
-	lab var meat_egg_24h "proteins, past 24h"
-	lab var vitA_24h "vit A, past 24h"
-	lab var divers_24h "food diversity, past 24h"
-	lab var bd_timesate "meal frequency, past 24h"
+	lab var dairy_24h "dairy, past 24h" // binary
+	lab var meat_egg_24h "proteins, past 24h" // binary
+	lab var vitA_24h "vit A, past 24h" // binary
+	lab var divers_24h "food diversity, past 24h" //categories 0-6
+	lab var bd_timesate "meal frequency, past 24h" 
+	* divers_gt4 // binary
 	* divers_gt4 Child 6-12 mo received foods from 4 or more food groups in past 24hr
-*Fam 3 Variables: * morbidity only 2016
+
+	*Fam 3 Variables: * morbidity only 2016
 global fam3 "morb_2days morb_3days morb_7days"
 	label var morb_2days "Morbidity, Past 2 days"
 	label var morb_3days "Morbidity, Past 3 days"
-	label var morb_7days "Morbidity, Past 7 days"
+	label var morb_7days "Morbidity, Past 7 days" // value 0-8
+	
 *Fam 4 Variables: Home learning environment
 global fam4 "learningop playobj totbook home_score2 role_health role_teach depend_health depend_intel ladder_health ladder_intel"
 	label var learningop "Num of Activity w/Adult"
@@ -275,7 +278,7 @@ foreach num in 1 2 4 5 {
 	
 	
 	
-	use "${All_create}table2", clear
+	use "${All_create}ITT_table2.dta", clear
 	
 	
 *-------------------------------------  FINAL  TABLES -------------------------------------------------------
@@ -405,7 +408,9 @@ foreach var of varlist ${fam`num'} {
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		
-			
+foreach var of varlist dairy_24h meat_egg_24h vitA_24h divers_gt4 {
+		tab `var' if year==2016 & treatment==0
+		}
 
 * BASELINE-ADJUSTED TABLE
 

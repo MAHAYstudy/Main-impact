@@ -4,19 +4,20 @@
 Ling's working branch on ITT-infant
 
 - Table 2
- - [x] stunted & severely stunted as proportion
-- Table 3
- - [x] adjusted for sex
-  
+
+  -[x] stunted & severely stunted as proportion
+- Table 3 
+  -[x] done using updated variables (criteria non-modified)
+  -[x] adjusted for sex
+  -[x] CI, Median & IQR
+  -[x]table 3: need to add proportions for binary outcomes (check all the variables)
+  -[ ]table 3: add mealprep
+
 
 Questions:
-table 3 - the construct of outcome variables for hygiene score, ECD score
+table 3 - consider the construct of outcome variables for hygiene score, ECD score
 
 
-### Table 2 & 3: 
-
-- [ ] table 3: need to add proportions for binary outcomes (check all the variables)
-- [ ] table 3: add mealprep
 
 ### Table 1:
 
@@ -52,4 +53,3 @@ the baseline_balance_endline_v3 is the most recent dofile that creates the balan
 The format tables are a bit cumbersome. Is there a more straightforward way of extracting the tables?
  
 On the balance tables in RCTs, a useful post from our dev impact blog https://blogs.worldbank.org/impactevaluations/should-we-require-balance-t-tests-baseline-observables-randomized-experiments
-

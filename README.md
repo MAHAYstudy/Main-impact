@@ -1,7 +1,7 @@
 # Main-impact
 
 
-Ling's working branch on ITT-infant
+ITT-infant: Ling's working branch
 
 - Table 2
  - [x] stunted & severely stunted as proportion
@@ -11,7 +11,7 @@ Ling's working branch on ITT-infant
  - [x] adjusted for sex
  - [x] CI, Median & IQR
  - [x] table 3: need to add proportions for binary outcomes (check all the variables)
- - [ ] table 3: add mealprep
+ - [x] table 3: add mealprep
 
 
 Questions:

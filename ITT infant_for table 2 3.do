@@ -329,12 +329,7 @@ foreach var of varlist ${fam`num'} {
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		
-foreach num of numlist 1 5 {
-estimates clear 
-foreach var of varlist ${fam`num'} {
-		ta `var', row percent
-}
-}
+
 
 
 * BASELINE-ADJUSTED TABLE

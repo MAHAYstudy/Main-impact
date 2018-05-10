@@ -4,7 +4,7 @@ capture log close
 
 /*
 *****************************************************************************************
-* FILENAME:  	Table1_balance_baseline_endline.do
+* FILENAME:  	balance_baseline_endline.do
 * PURPOSE:   	Create table 1 information
 * Last upeated:    	L. Hsin
 * DATE CREATED:   -		

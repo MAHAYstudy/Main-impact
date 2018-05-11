@@ -7,8 +7,25 @@
 				(3) comparing replaced and replacement households
 *	LAST MODIFIED: 05/01/18 Ling Hsin
 *	DATA IN:  infant_All.dta, female_All.dta, MAJ_Midpoint2.dta, MAJ_Endline.dta
+
+
+EG may 2018
+
+***table 1
+use infant_all
+keep if year==2014
+
+iebaltab [list of variables], grpvar(treatment) fixed(region) covariates(male infant_age_months) save([pathfortables]balance.xlsx) replace vce(cluster grappe)
+
+*** table S1
+use infant_all
+drop if targeted==0
+keep if year==2016
+iebaltab xx
+
 ********************************************************************************
 */
+
 clear
 clear matrix
 set more off
@@ -135,11 +152,14 @@ global d=8
 cd "$Mada"
 capture log close
 
+****************************************************************************
+****using infant_ALL data and merging in household and woman indicators*****
+****************************************************************************
 
-* using infant_ALL data and merging in household and woman indicators
+
 use "${All_create}infant_All", clear
 * only keeping target child
-drop if targeted==0
+keep if targeted==1
 
 
 
@@ -149,6 +169,7 @@ forvalues i = 1/5 {
 	}
 	
 label var safewater "Hh has a safe drinking water source"
+label var v_tot "Maternal vocabulary (PPVT) raw score"
 
 // standardizing wealth index
 qui summ wealth_ind
@@ -164,46 +185,80 @@ qui tab hfloor, gen(floor_)
 qui tab htrash_disposal, gen(trash_)
 
 
+
+*merge 1:m idmen using "${All_create}female_all_051118.dta", keepusing(knowledge_score mddw_score) nogen update replace
+
+
 ** Storing characteristics to be used in balance tables
 
-*	HH charactheristics (wealth_ind_14 was changed to wealth_ind)
-global HHvars hhsize hhage0_1 hhage2_5 hhage6_18 hhage19_60 wealth_ind safewater
+*===Panel A: Baseline household characteristics===*
+/*
+Household size
+Number of household members aged: 0-1 years old
+                               2-5 years old
+                               6-18 years old
+                               19-60 years old
+Asset index (housing, assets and livestock)
+Household access to safe drinking water source
+Mother education:     Did not attend school
+                    Primary or less
+                    Secondary or higher
+Maternal height (cm)
+Mother/caregiver age (years)
+Maternal vocabulary (PPVT) raw score†
+Child birth order†
+*/
+global HHvars hhsize hhage0_1 hhage2_5 hhage6_18 hhage19_60 wealth_ind ///
+	safewater mom_ed_1 mom_ed_2 mom_sec mother_height mother_age v_tot birth_order
 
-	*hhsize number of people in HH
-	*hhage number of hh member in age range
-	*
+*===Panel B: Child characteristics at baseline===*
+/*
+Length for age z-score†
+Weight for age z-score†
+Weight for length z-score†
+ASQ-I child development z-score†
+*/
+global Cvars hfaz wfaz wflz asqAllScore_sresid
 
-*	Women char -- Time use to be added 
-global Wvars mom_ed_1 mom_ed_2 mom_sec mother_height mother_age v_tot ///
-knowledge_score mddw_score
-
-*	Kids char -- Learning opportunities 
-global Ivars wfaz hfaz wflz learningop totbook playobj home_score2 divers_24h ///
- birth_order asqAllScore_sresid
+*===Panel C: : Family characteristics at baseline===*
+/*
+Maternal knowledge index score
+Material diet diversity score index (MDDW)
+Learning opportunities: # of activities with any adult† 
+Total books, general plus children's books†
+Play objects and materials†
+Family care indicators (FCI) score †
+Child food diversity score: 24-hour recall †
+*/
+global Fvars knowledge_score mddw_score learningop totbook playobj home_score2 divers_24h
 
 * Saving control variables for balance [update with final list of controls dec 2017)
-global controls 		"male i.mother_educ i.wealth_qui i.birth_order mother_age"
+
+global controls "male i.mother_educ i.wealth_qui i.birth_order mother_age"
 global med_controls 	"male i.wealth_qui i.birth_order mother_age"
 global male_controls 	"i.mother_educ i.wealth_qui i.birth_order mother_age"
 global border_controls 	"male i.mother_educ i.wealth_qui mother_age"
 global mage_controls 	"male i.mother_educ i.wealth_qui i.birth_order"
 
-
-*global controls "male i.mother_educ i.wealth_qui i.birth_order v_tot depress_tot logm_height mother_age"
-*global med_controls "male i.wealth_qui i.birth_order v_tot depress_tot logm_height mother_age"
-*global male_controls "i.mother_educ i.wealth_qui i.birth_order v_tot depress_tot logm_height mother_age"
-*global vtot_controls "male i.mother_educ i.wealth_qui i.birth_order depress_tot logm_height mother_age"
-*global border_controls "male i.mother_educ i.wealth_qui v_tot depress_tot logm_height mother_age"
-
-
 preserve
 
-keep if year==2014
+keep if year == 2014
+
 
 ** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
 
+
+iebaltab $HHvars $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance.xlsx") fixed(region) /// 
+	covariates(male infant_age_months) vce(cluster grappe) ft form(%9.3fc) replace rowvarlabel
+
+
+	
+	
+	
+/*
+	
 ** Starting Loop for Export 
-global Xvars : di "$HHvars $Wvars $Ivars"
+global Xvars : di "$HHvars $Cvars $Fvars"
 local Nvars : word count $Xvars
 local last : word `Nvars' of $Xvars
 matrix stars = J(`Nvars',2,0)

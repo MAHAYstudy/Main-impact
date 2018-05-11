@@ -3,28 +3,25 @@
 
 ITT-infant: Ling's working branch
 
-- Table 2
- - [x] stunted & severely stunted as proportion
- 
-- Table 3 
- - [x] done using updated variables (criteria non-modified)
- - [x] adjusted for sex
- - [x] CI, Median & IQR
- - [x] table 3: need to add proportions for binary outcomes (check all the variables)
- - [x] table 3: add mealprep
 
-
-Questions:
-table 3 - consider the construct of outcome variables for hygiene score, ECD score
-
-
-
-### Table 1:
-
-use balance_baseline_endline_v3.do
+### Table 1: 
+using Table1_balance.do
+- [ ] redo 1 & S1 using iebaltab
 - [ ] include median/IQR and proportions instead of means/s.e.
 
+### Figure 3
+- [ ] create heterog figure
 
+
+
+- Table 2 (done)
+ - [x] changed back to mean/sd
+ 
+- Table 3 (done)
+ - [x] changed back to mean/sd
+
+
+#### Next: ACN
 
 
 ## Notes for analysis use

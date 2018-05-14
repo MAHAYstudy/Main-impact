@@ -206,9 +206,9 @@ gen mom_sec = inlist(mother_educ,2,3)
 qui tab helectr, gen(electr_)
 qui tab hfloor, gen(floor_)
 qui tab htrash_disposal, gen(trash_)
+
+
 ** TO CHECK IF WE NEED TO UPDATE AND ADD THIS MERGE
-
-
 *merge 1:m idmen using "${All_create}female_all_051118.dta", keepusing(knowledge_score mddw_score) nogen update replace
 
 
@@ -283,8 +283,8 @@ restore
 	*
 ** ------- BALANCE TABLE S1: FULL SAMPLE AT BASELINE ------------- **
 
-iebaltab $HHvars $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance.xlsx") fixed(region) /// 
-	covariates(male infant_age_months) vce(cluster grappe) ft form(%9.3fc) replace rowvarlabel
+preserve	
+	keep if year == 2016
 
 
 	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **

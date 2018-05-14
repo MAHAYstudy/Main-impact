@@ -158,8 +158,29 @@ capture log close
 
 
 use "${All_create}infant_All", clear
+
+
+* WE NOW HAVE 375 obs AT MIDLINE WITH THE SAME IDMEN IN 2015 
+* THEY ARE THE SIBLINGS BORN BETWEEN BASELINE AND MIDLINE (SEE THAT THE IDIND IS DIFFERENT 
+* CAN WE CREATE THE VARIABLE TARGETED (0 FOR SIBING, 1 FOR TARGET CHILD FOR 2015?
+* FOR THE MOMENT BEING KEEP ONLY ONE OBSERVATION IN 2015 
+bys idmen year: gen num=_n
+egen dd=max(num), by(idmen year)
+ta dd year
+*brow idmen idind num hh_code mother_name infant_name target infant_birth_*  hfaz if dd>1
+drop if target==. & year==2015
+drop dd
+
+
+** IDENTIFIERS ARE MISSING FOR HOUSEHOLDS OF PREGNANT WOMEN AT BASELINE - TARGET=1. NEED TO 
+bys year: inspect region
+egen dd=max(region), by(grappe)
+replace region=dd if year==2014 & region==.
+drop dd
+
+
 * only keeping target child
-*keep if targeted==1
+*keep if targeted==1  // TARGETED IS DEFINED SO FAR ONLY AT ENDLINE //
 drop if targeted==0
 
 
@@ -177,13 +198,15 @@ replace wealth_ind = (wealth_ind - r(mean))/r(sd)
 
 // Generating education level variables for mother
 qui tab mother_educ, gen(mom_ed_)
+gen mom_unsch=inlist(mother_educ,0)
+gen mom_prim=inlist(mother_educ,1)
 gen mom_sec = inlist(mother_educ,2,3)
 
 // Generating floor, electricity, trash variables
 qui tab helectr, gen(electr_)
 qui tab hfloor, gen(floor_)
 qui tab htrash_disposal, gen(trash_)
-
+** TO CHECK IF WE NEED TO UPDATE AND ADD THIS MERGE
 
 
 *merge 1:m idmen using "${All_create}female_all_051118.dta", keepusing(knowledge_score mddw_score) nogen update replace
@@ -198,7 +221,7 @@ Number of household members aged: 0-1 years old
                                2-5 years old
                                6-18 years old
                                19-60 years old
-Asset index (housing, assets and livestock)
+Asset index (housing, assets and livestock) quintiles
 Household access to safe drinking water source
 Mother education:     Did not attend school
                     Primary or less
@@ -208,8 +231,8 @@ Mother/caregiver age (years)
 Maternal vocabulary (PPVT) raw score†
 Child birth order†
 */
-global HHvars hhsize hhage0_1 hhage2_5 hhage6_18 hhage19_60 wealth_ind ///
-	safewater mom_ed_1 mom_ed_2 mom_sec mother_height mother_age v_tot birth_order
+global HHvars hhsize hhage0_1 hhage2_5 hhage6_18 hhage19_60 quintile* ///
+	safewater mom_ed_1 mom_ed_2 mom_sec mother_height mother_age v_tot 
 
 *===Panel B: Child characteristics at baseline===*
 /*
@@ -218,7 +241,7 @@ Weight for age z-score†
 Weight for length z-score†
 ASQ-I child development z-score†
 */
-global Cvars hfaz wfaz wflz asqAllScore_sresid
+global Cvars birth_order hfaz wfaz wflz asqAllScore_sresid 
 
 *===Panel C: : Family characteristics at baseline===*
 /*
@@ -232,28 +255,48 @@ Child food diversity score: 24-hour recall †
 */
 global Fvars knowledge_score mddw_score learningop totbook playobj home_score2 divers_24h
 
-* Saving control variables for balance [update with final list of controls dec 2017)
+/* Saving control variables for balance [update with final list of controls dec 2017)
 
 global controls "male i.mother_educ i.wealth_qui i.birth_order mother_age"
 global med_controls 	"male i.wealth_qui i.birth_order mother_age"
 global male_controls 	"i.mother_educ i.wealth_qui i.birth_order mother_age"
 global border_controls 	"male i.mother_educ i.wealth_qui mother_age"
 global mage_controls 	"male i.mother_educ i.wealth_qui i.birth_order"
-
+*/
 preserve
 
-keep if year == 2014
+	keep if year == 2014
 
 
-** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
+	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
 
+* the F TEST REQUIRES TO TACKLE THE MISSING VARIABLES (ft) BLOCKED OUT FOR THE MOMENT BEING 
+	iebaltab $HHvars , grpvar(treatment) save("${TABLES}balance_baseline_all.xlsx")  fixed(region) /// 
+		   form(%9.3fc) replace rowvarlabel
+
+* balance tables if the child was alive/born at baseline
+	drop if target==1
+	iebaltab $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance_baseline_23.xlsx")  fixed(region) /// 
+		 covariates(male infant_age_months) vce(cluster grappe) form(%9.3fc) replace rowvarlabel
+
+restore
+	*
+** ------- BALANCE TABLE S1: FULL SAMPLE AT BASELINE ------------- **
 
 iebaltab $HHvars $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance.xlsx") fixed(region) /// 
 	covariates(male infant_age_months) vce(cluster grappe) ft form(%9.3fc) replace rowvarlabel
 
 
+	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
+
+* the F TEST REQUIRES TO TACKLE THE MISSING VARIABLES (ft) BLOCKED OUT FOR THE MOMENT BEING 
+
+	iebaltab $HHvars  , grpvar(treatment) save("${TABLES}balance_post.xlsx")  fixed(region) /// 
+		covariates(male infant_age_months) vce(cluster grappe)  form(%9.3fc) replace rowvarlabel
 	
+restore
 	
+	--------
 	
 /*
 	

@@ -30,7 +30,7 @@ clear
 clear matrix
 set more off
 *	Global paths
-global d=8
+global d=3
 
 	if $d==2 {
 	* "Ann" 
@@ -159,8 +159,8 @@ capture log close
 
 use "${All_create}infant_All", clear
 * only keeping target child
-keep if targeted==1
-
+*keep if targeted==1
+drop if targeted==0
 
 
 quietly tab wealth_qui , gen(quintile)

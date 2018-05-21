@@ -8,12 +8,12 @@ ITT-infant: Ling's working branch
 fixed codes on maternal educ missing values, updated dataset(female & infant)
 update table 2 & 3
 
-### Table 1 & S1 :  (done)
-using Table1_balance.do
+### Table 1 & S1 : using Table1_balance.do (done)
 - [x] redo 1 & S1 using iebaltab
 - [x] create a variable to identify sibilings
 
-### Figure 3 : need to confirm graph content
+### Figure 3 : using Graph3-ITT infant heterogeneity.do
+need to confirm graph content
 graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
 file name starts with het_
 - [x] Heterogeneity by young child for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
@@ -22,10 +22,10 @@ file name starts with het_
 
 
 
-- Table 2 (done) : ITT infant_for table 2 3.do 
+### Table 2 (done) : ITT infant_for table 2 3.do 
 
  
-- Table 3 (done) : ITT infant_for table 2 3.do, basic ITT female(2nd half table 3).do
+### Table 3 (done) : ITT infant_for table 2 3.do, basic ITT female(2nd half table 3).do
 
 
 

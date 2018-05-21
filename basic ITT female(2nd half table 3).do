@@ -285,8 +285,8 @@ global fam2 "mddw foodsecure"
 *Fam 6 : For table 3 , second half (home_score2 in ITT infant)
 global fam6 "hygiene_score mealprep knowledge_score mddw_score foodSecurityIHS "
 /*
-hygiene_score con
-knowledge_score con
+hygiene_score continuous
+knowledge_score continuous
 mddw_score 0-8
 foodSecurityIHS 1-4
 */

@@ -5,7 +5,7 @@ version 13
 
 * SET GLOBAL MACROS for path to main directories
 
-global d= 6
+global d= 8
 	if $d==1 {
 	* "Karl"
 	}
@@ -152,6 +152,40 @@ global d= 6
 	
 	
 	}
+	
+		if $d == 8 {
+	* 	Ling
+	global Mada "/Volumes/Macintosh HD/Users/Ling/Dropbox/Madagascar Mahay Data/"
+	*	Baseline folders
+	gl BL_orig "${Mada}baseline/raw data2014/latest/"
+	gl BL_create "${Mada}baseline/created_data2014/FINAL DATASETS/"
+	gl MAJ_orig "${Mada}midline/Data/MAJ/Original/MAJ_Updated June 2016/"
+	gl who_z "${Mada}WHO igrowup STATA/"
+	
+	*	Midline folders
+	gl MAJ_create "${Mada}midline/Data/MAJ/"
+	gl ML_orig_enf "${Mada}midline/Data/data - original/Data with correct ids/"
+    gl ML_orig_men "${Mada}midline/Data/data - original/Data with correct ids/"
+    gl ML_orig_vil "${Mada}midline/Data/data - original/Data with correct ids/"
+	gl ML_create "${Mada}midline/Data/Created_Data_Midline/FINAL DATASETS/"
+
+	*	Endline folders 
+	gl EL_orig_enf "${Mada}endline/original_data/ENFANT/"
+	gl EL_orig_men "${Mada}endline/original_data/MENAGE/"
+	gl EL_orig_vil "${Mada}endline/original_data/VILLAGE/"
+	gl EL_create "${Mada}endline/created_data/"
+	gl EL_MAJ "${Mada}endline/MAJ/"
+	
+	* Admin data
+	gl ADMIN_orig "${Mada}admin_data/"
+	gl ADMIN_create "${Mada}admin_data/created_data/"		
+	
+	** ANALYSIS FOLDERS
+	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global GRAPHS "${Mada}analysis/graphs/"
+	global All_create "${Mada}analysis/all_create/"
+	}
+	
 	global survey_name "Enfant"
 
 cd "$Mada"
@@ -294,7 +328,7 @@ use "${ML_create}HHSSiteDstance2015", clear
 
 
 ********************************************************************************
-* MERGE/APPEND midline and INFANT OUTCOMES
+* MERGE/APPEND line and INFANT OUTCOMES
 ********************************************************************************
 /* get hh wealth quintiles, food security and water/sanitation characteristics
 use "${EL_create}HH_House_final", clear

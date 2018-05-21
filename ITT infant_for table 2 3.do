@@ -193,31 +193,8 @@ recode region (4=1) (2=0) (3=0) (5=0) , gen(hautep)
 	replace `var'=-99 if `var'==. & year<2016
 	}
 	
-* baseline vars are BL`var'
-foreach num in 1 2 4 5 {
-	foreach var of varlist ${fam`num'} {
-		g d`var'=L2.`var' if year==2016
-		*replace d`var'=L.`var' if year==2015
-		egen BL`var' = mean(d`var'), by(idmen)
-		drop d`var'
-		}
-}
-
-*** Save dataset
-	save "${All_create}ITT_table2.dta", replace
-	desc, s
 	
-
-	
-	
-	
-	
-	
-	
-	use "${All_create}ITT_table2.dta", clear
-	
-
-*Fam 1 Variables
+	*Fam 1 Variables
 global fam1 "hfaz stunted sevstunted wfaz wflz hemoglobin"
 
 	label var hfaz "Height/Age Zscore"
@@ -281,6 +258,32 @@ global fam6 "hygiene_score knowledge_score mddw_score home_score2 foodSecurityIH
 		
 *Controls	
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"	
+
+* baseline vars are BL`var'
+foreach num in 1 2 4 5 {
+	foreach var of varlist ${fam`num'} {
+		g d`var'=L2.`var' if year==2016
+		*replace d`var'=L.`var' if year==2015
+		egen BL`var' = mean(d`var'), by(idmen)
+		drop d`var'
+		}
+}
+
+*** Save dataset
+	save "${All_create}ITT_table2.dta", replace
+	desc, s
+	
+
+	
+	
+	
+	
+	
+	
+	use "${All_create}ITT_table2.dta", clear
+	
+
+
 *-------------------------------------  FINAL  TABLES -------------------------------------------------------
 *-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------
 *--------------------------------------TABLE 2 ITT INFANT----------------------------------------------------
@@ -323,9 +326,17 @@ foreach var of varlist ${fam`num'} {
 		estadd scalar ftest= round(r(p),.001)
 		test 1.treatment =2.treatment =3.treatment =4.treatment
 		estadd scalar eqtest = round(r(p),.001)
+		test 2.treatment =3.treatment
+		estadd scalar p_value_2_3=r(p)
+		test 1.treatment = 2.treatment
+		estadd scalar p_value_1_2=r(p)
+		test 1.treatment = 3.treatment
+		estadd scalar p_value_1_3=r(p)
+		test 1.treatment = 4.treatment
+		estadd scalar p_value_1_4=r(p)
 				}
 		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
+		stats(r2 r2_a N mean sd ftest eqtest p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		

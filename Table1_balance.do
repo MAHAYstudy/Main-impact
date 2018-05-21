@@ -30,7 +30,7 @@ clear
 clear matrix
 set more off
 *	Global paths
-global d=3
+global d=8
 
 	if $d==2 {
 	* "Ann" 
@@ -159,6 +159,15 @@ capture log close
 
 use "${All_create}infant_All", clear
 
+/*
+drop if idind == .
+tsset idind year
+g dd=1 if targeted == 1 & year==2016
+egen targeted2015=max(dd), by(idind)
+replace targeted = F.targeted if targeted2015 == 1 & year == 2015
+ta targeted year
+drop dd targeted2015
+*/
 
 * WE NOW HAVE 375 obs AT MIDLINE WITH THE SAME IDMEN IN 2015 
 * THEY ARE THE SIBLINGS BORN BETWEEN BASELINE AND MIDLINE (SEE THAT THE IDIND IS DIFFERENT 
@@ -167,9 +176,12 @@ use "${All_create}infant_All", clear
 bys idmen year: gen num=_n
 egen dd=max(num), by(idmen year)
 ta dd year
+ta target year, m
 *brow idmen idind num hh_code mother_name infant_name target infant_birth_*  hfaz if dd>1
 drop if target==. & year==2015
-drop dd
+drop dd num
+
+
 
 
 ** IDENTIFIERS ARE MISSING FOR HOUSEHOLDS OF PREGNANT WOMEN AT BASELINE - TARGET=1. NEED TO 
@@ -179,14 +191,12 @@ replace region=dd if year==2014 & region==.
 drop dd
 
 
-* only keeping target child
-*keep if targeted==1  // TARGETED IS DEFINED SO FAR ONLY AT ENDLINE //
-drop if targeted==0
+
 
 
 quietly tab wealth_qui , gen(quintile)
 forvalues i = 1/5 {
-	label var quintile`i' "Quantile `i' of wealth index"
+	label var quintile`i' "Quintile `i' of wealth index"
 	}
 	
 label var safewater "Hh has a safe drinking water source"
@@ -208,8 +218,7 @@ qui tab hfloor, gen(floor_)
 qui tab htrash_disposal, gen(trash_)
 
 
-** TO CHECK IF WE NEED TO UPDATE AND ADD THIS MERGE
-*merge 1:m idmen using "${All_create}female_all_051118.dta", keepusing(knowledge_score mddw_score) nogen update replace
+
 
 
 ** Storing characteristics to be used in balance tables
@@ -263,38 +272,67 @@ global male_controls 	"i.mother_educ i.wealth_qui i.birth_order mother_age"
 global border_controls 	"male i.mother_educ i.wealth_qui mother_age"
 global mage_controls 	"male i.mother_educ i.wealth_qui i.birth_order"
 */
+*Drop variables not used in current analysis
+drop fpc01-a204
+drop fb02fenc-fd16c_s
+drop fpg_demo99-fpc_rawtot
+drop clonefpc01-clonefpc_1pl_sresid
+drop fpc19_rc-fps37_rc
+drop fl09a_0-fd28a_5
+drop fpc19b-q1_5
+
+tab infant_age_months year , m
+tab infant_age_months target , m
+tab male year , m
+tab male target , m
+gen impute_infant_age = infant_age_months
+replace impute_infant_age = -3 if infant_age_months == .
+gen impute_male = male
+replace impute_male = 3 if male ==.
+
 preserve
 
 	keep if year == 2014
 
 
 	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
+summ $HHvars if treatment == 0, de
+summ $Cvars $Fvars if treatment == 0 & target != 1, de
+
+
+
 
 * the F TEST REQUIRES TO TACKLE THE MISSING VARIABLES (ft) BLOCKED OUT FOR THE MOMENT BEING 
-	iebaltab $HHvars , grpvar(treatment) save("${TABLES}balance_baseline_all.xlsx")  fixed(region) /// 
-		   form(%9.3fc) replace rowvarlabel
+	iebaltab $HHvars , grpvar(treatment) save("${TABLES}balance_baseline_HH.xlsx")  fixed(region) /// 
+		    vce(cluster grappe) feqtest pftest form(%9.3fc) replace rowvarlabel
+
+	iebaltab $HHvars , grpvar(treatment) save("${TABLES}balance_baseline_HH_cov.xlsx")  fixed(region) /// 
+		    covariates(impute_male impute_infant_age) vce(cluster grappe) feqtest pftest form(%9.3fc) replace rowvarlabel
 
 * balance tables if the child was alive/born at baseline
 	drop if target==1
-	iebaltab $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance_baseline_23.xlsx")  fixed(region) /// 
-		 covariates(male infant_age_months) vce(cluster grappe) form(%9.3fc) replace rowvarlabel
+	iebaltab $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance_baseline_CF.xlsx")  fixed(region) /// 
+		 covariates(male infant_age_months) vce(cluster grappe) form(%9.3fc) feqtest pftest replace rowvarlabel
+	iebaltab $Cvars $Fvars , grpvar(treatment) save("${TABLES}balance_baseline_CFnotest.xlsx")  fixed(region) /// 
+		 covariates(male infant_age_months) vce(cluster grappe) form(%9.2fc) replace rowvarlabel
 
+	** ------- BALANCE TABLE S1: FULL SAMPLE AT ENDLINE ------------- **
 restore
-	*
-** ------- BALANCE TABLE S1: FULL SAMPLE AT BASELINE ------------- **
-
-preserve	
-	keep if year == 2016
-
-
-	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
-
-* the F TEST REQUIRES TO TACKLE THE MISSING VARIABLES (ft) BLOCKED OUT FOR THE MOMENT BEING 
-
-	iebaltab $HHvars  , grpvar(treatment) save("${TABLES}balance_post.xlsx")  fixed(region) /// 
-		covariates(male infant_age_months) vce(cluster grappe)  form(%9.3fc) replace rowvarlabel
 	
-restore
+
+* only keeping target child
+drop if targeted==0
+	keep if year == 2016
+	
+summ $HHvars birth_order if treatment == 0, de
+
+	iebaltab $HHvars birth_order, grpvar(treatment) save("${TABLES}balance_endline_HHnotest.xlsx")  fixed(region) /// 
+		    covariates(impute_male impute_infant_age) vce(cluster grappe) form(%9.2fc) replace rowvarlabel
+
+	iebaltab $HHvars birth_order, grpvar(treatment) save("${TABLES}balance_endline_HH_test.xlsx")  fixed(region) /// 
+		    covariates(impute_male impute_infant_age) vce(cluster grappe) feqtest pftest form(%9.3fc) replace rowvarlabel
+
+
 	
 	--------
 	

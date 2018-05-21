@@ -4,21 +4,29 @@
 ITT-infant: Ling's working branch
 
 
-### Table 1: 
+05/16: 
+fixed codes on maternal educ missing values, updated dataset(female & infant)
+update table 2 & 3
+
+### Table 1 & S1 :  (done)
 using Table1_balance.do
-- [ ] redo 1 & S1 using iebaltab
-- [ ] include median/IQR and proportions instead of means/s.e.
+- [x] redo 1 & S1 using iebaltab
+- [x] create a variable to identify sibilings
 
-### Figure 3
-- [ ] create heterog figure
+### Figure 3 : need to confirm graph content
+graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
+file name starts with het_
+- [x] Heterogeneity by young child for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
+- [x] Heterogeneity by maternal ed for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
+- [x] Heterogeneity by maternal ed for each arm and multiple outcomes: Dairy, Meat & eggs, vitamin A foods, diet diversity, HOME
 
 
 
-- Table 2 (done)
- - [x] changed back to mean/sd
+- Table 2 (done) : ITT infant_for table 2 3.do 
+
  
-- Table 3 (done)
- - [x] changed back to mean/sd
+- Table 3 (done) : ITT infant_for table 2 3.do, basic ITT female(2nd half table 3).do
+
 
 
 #### Next: ACN

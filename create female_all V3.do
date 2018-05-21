@@ -8,7 +8,7 @@ version 13
 */
 * SET GLOBAL MACROS for path to main directories
 
-global d= 6
+global d= 8
 	if $d==1 {
 	* "Karl"
 	}
@@ -108,6 +108,39 @@ global d= 6
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 
+	}
+	
+			if $d == 8 {
+	* 	Ling
+	global Mada "/Volumes/Macintosh HD/Users/Ling/Dropbox/Madagascar Mahay Data/"
+	*	Baseline folders
+	gl BL_orig "${Mada}baseline/raw data2014/latest/"
+	gl BL_create "${Mada}baseline/created_data2014/FINAL DATASETS/"
+	gl MAJ_orig "${Mada}midline/Data/MAJ/Original/MAJ_Updated June 2016/"
+	gl who_z "${Mada}WHO igrowup STATA/"
+	
+	*	Midline folders
+	gl MAJ_create "${Mada}midline/Data/MAJ/"
+	gl ML_orig_enf "${Mada}midline/Data/data - original/Data with correct ids/"
+    gl ML_orig_men "${Mada}midline/Data/data - original/Data with correct ids/"
+    gl ML_orig_vil "${Mada}midline/Data/data - original/Data with correct ids/"
+	gl ML_create "${Mada}midline/Data/Created_Data_Midline/FINAL DATASETS/"
+
+	*	Endline folders 
+	gl EL_orig_enf "${Mada}endline/original_data/ENFANT/"
+	gl EL_orig_men "${Mada}endline/original_data/MENAGE/"
+	gl EL_orig_vil "${Mada}endline/original_data/VILLAGE/"
+	gl EL_create "${Mada}endline/created_data/"
+	gl EL_MAJ "${Mada}endline/MAJ/"
+	
+	* Admin data
+	gl ADMIN_orig "${Mada}admin_data/"
+	gl ADMIN_create "${Mada}admin_data/created_data/"		
+	
+	** ANALYSIS FOLDERS
+	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global GRAPHS "${Mada}analysis/graphs/"
+	global All_create "${Mada}analysis/all_create/"
 	}
 	
 	global survey_name "Enfant"
@@ -330,6 +363,9 @@ recode mother_educ 4=3 8=1
 g mothered_miss=(mother_educ==.)
 recode mother_educ .=9 
 
+
+
+
 recode HHhead_educ .5=0 1.5=1 4=3 5=3
 
 
@@ -366,6 +402,7 @@ tsset idmen year
 g dd=1 if mother_age<12
 egen flagd=max(dd) , by(idmen)
 replace mother_age=. if flagd==1 & dd==1
+drop dd
 
 * impute from other years if missing
 g mage=mother_age
@@ -376,6 +413,7 @@ replace mage=F.mother_age-1 if mother_age==. & F.mother_age!=.
 replace mother_age=mage 				if mage!=. &  mother_age==.
 drop mage
 
+/*
 g meduc=mother_educ
 
 replace meduc=L.mother_educ if mother_educ==. & L.mother_educ!=.
@@ -383,6 +421,20 @@ replace meduc=F.mother_educ if mother_educ==. & F.mother_educ!=.
 replace meduc=L2.mother_educ if mother_educ==. & L2.mother_educ!=.
 replace mother_educ=meduc 				if meduc!=. &  mother_educ==.
 drop meduc
+*/
+
+g dd=1 if mother_educ==9 & year==2016 // dd marks mothers at EL missing education data
+egen missed=max(dd), by(idmen)
+ta mother_ed year if missed==1
+replace mother_educ=L2.mother_educ if missed==1 & year==2016 & L2.mother_educ != 9 & L2.mother_educ != .
+drop dd missed
+g dd=1 if mother_educ==9 & year==2016 
+egen missed=max(dd), by(idmen)
+replace mother_educ=L.mother_educ if missed==1 & year==2016 & L.mother_educ != 9 & L.mother_educ != .
+ta mother_educ year
+summ mother_ed if year == 2016, d // <10% missing, replace to mean
+replace mother_educ=1 if mother_educ==9
+drop dd missed
 
 g lagheight=L2.ma05
 egen mh=rmean(ma05 lagheight)  if ma05!=. & lagheight!=.

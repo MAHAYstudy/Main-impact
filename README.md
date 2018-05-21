@@ -13,9 +13,9 @@ update table 2 & 3
 - [x] create a variable to identify sibilings
 
 ### Figure 3 : using Graph3-ITT infant heterogeneity.do
-need to confirm graph content
-graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
-file name starts with het_
+- need to confirm graph content
+- graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
+- file name starts with het_
 - [x] Heterogeneity by young child for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: Dairy, Meat & eggs, vitamin A foods, diet diversity, HOME

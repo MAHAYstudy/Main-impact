@@ -314,9 +314,11 @@ foreach var of varlist $fam2 {
 			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
-
-***output data edited, saved as graph3age_modified, graph3momed_child_modified, graph3momed_hh_modified***
-**********************************************************************************************************
+	*** high: ub of ci; low: lb of ci; close: beta coef 
+	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
+	*** added corresponding codes for outcome, heterogeneity and treatment
+	*** saved as graph3age_modified, graph3momed_child_modified, graph3momed_hh_modified
+	**********************************************************************************************************
 
 
 	************************************************************	

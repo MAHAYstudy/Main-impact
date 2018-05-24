@@ -408,9 +408,17 @@ foreach var of varlist ${fam`num'} {
 		estadd scalar ftest= round(r(p),.001)
 		test 1.treatment =2.treatment =3.treatment =4.treatment
 		estadd scalar eqtest = round(r(p),.001)
+		test 2.treatment =3.treatment
+		estadd scalar p_value_2_3=r(p)
+		test 1.treatment = 2.treatment
+		estadd scalar p_value_1_2=r(p)
+		test 1.treatment = 3.treatment
+		estadd scalar p_value_1_3=r(p)
+		test 1.treatment = 4.treatment
+		estadd scalar p_value_1_4=r(p)
 				}
 		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
+		stats(r2 r2_a N mean sd ftest eqtest p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3fc)) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		

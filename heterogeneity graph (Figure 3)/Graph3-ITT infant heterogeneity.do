@@ -163,7 +163,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -245,7 +245,7 @@ keep if year == 2016
 
 * COVARIATE TABLE (stratified)
 
-
+*age and child characteristics
 cap erase "${TABLES}graph3age.xml"
 cap erase "${TABLES}graph3age.txt"
 foreach var of varlist $fam1 {
@@ -269,10 +269,35 @@ foreach var of varlist $fam1 {
 	est clear
 }
 
+*age and household characteristics
+cap erase "${TABLES}graph3age_hh.xml"
+cap erase "${TABLES}graph3age_hh.txt"
+foreach var of varlist $fam2 {
+	reg `var' i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)
+		lincom 1.treatment 
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 2.treatment 
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 3.treatment 
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 4.treatment 
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 1.treatment + 1.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 2.treatment + 2.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 3.treatment + 3.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom 4.treatment + 4.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+	est clear
+}
+
+*Mother education and child characteristics
 cap erase "${TABLES}graph3momed_child.xml"
 cap erase "${TABLES}graph3momed_child.txt"
 foreach var of varlist $fam1 {
-	reg `var' i.treatment##mother_ed male infant_age_months i.region i.mother_educ $controls ,  robust cl(grappe)
+	reg `var' i.treatment##mother_ed male infant_age_months i.region  $controls ,  robust cl(grappe)
 		lincom 1.treatment 
 			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 		lincom 2.treatment 
@@ -292,10 +317,12 @@ foreach var of varlist $fam1 {
 	est clear
 }
 
+
+*Mother education and household characteristics
 cap erase "${TABLES}graph3momed_hh.xml"
 cap erase "${TABLES}graph3momed_hh.txt"
 foreach var of varlist $fam2 {
-	reg `var' i.treatment##mother_ed male infant_age_months i.region i.mother_educ $controls ,  robust cl(grappe)
+	reg `var' i.treatment##mother_ed male infant_age_months i.region  $controls ,  robust cl(grappe)
 		lincom 1.treatment
 			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 		lincom 2.treatment 
@@ -314,10 +341,43 @@ foreach var of varlist $fam2 {
 			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
+
 	*** high: ub of ci; low: lb of ci; close: beta coef 
 	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
 	*** added corresponding codes for outcome, heterogeneity and treatment
-	*** saved as graph3age_modified, graph3momed_child_modified, graph3momed_hh_modified
+	*** saved as graph3age_modified, graph3age_hh_modified, graph3momed_child_modified, graph3momed_hh_modified
+	**********************************************************************************************************
+	
+*Tables adjusted for baseline data
+	
+	*age and child characteristics
+	cap erase "${TABLES}graph3age_child_BLadj.xml"
+	cap erase "${TABLES}graph3age_child_BLadj.txt"
+	foreach var of varlist $fam1 {
+		reg `var' i.treatment##ageold male i.region i.mother_educ $controls BL`var', robust cl(grappe)
+			lincom 1.treatment 
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 2.treatment 
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 3.treatment 
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 4.treatment 
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 1.treatment + 1.treatment#1.ageold
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 2.treatment + 2.treatment#1.ageold
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 3.treatment + 3.treatment#1.ageold
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			lincom 4.treatment + 4.treatment#1.ageold
+				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		est clear
+	}
+	
+	*** high: ub of ci; low: lb of ci; close: beta coef 
+	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
+	*** added corresponding codes for outcome, heterogeneity and treatment
+	*** saved as graph3age_child_BLadj_modified
 	**********************************************************************************************************
 
 
@@ -325,7 +385,7 @@ foreach var of varlist $fam2 {
 	*For child age het graph with infant characteristics*
 	************************************************************
 	
-import excel "/Users/Ling/Desktop/MadaTables/graph3age_modified.xlsx", sheet("export") firstrow case(lower) clear
+import excel "${TABLES}graph3age_modified.xlsx", sheet("export") firstrow case(lower) clear
 save "${GRAPHS}/Main-impact-paper/graph3_age.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
@@ -381,15 +441,135 @@ use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
 		graph save "${GRAPHS}Main-impact-paper/`fname`num''", replace
 		}
 
+	*********************************************************************
+	*For child age het graph with infant characteristics adjusted for BL*
+	*********************************************************************
+	
+import excel "${TABLES}graph3age_child_BLadj_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta", replace
+
+use "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta" , clear
+
+	destring outcome treatment age high low close, replace
+	
+	label define outcome 1 "Height for age Z score" 2 "Weight for age Z score" ///
+		3 "Weight for length Z score" 4 "Total ASQ"
+	label value outcome outcome
+	
+
+	label define treatment 1 "T1" 2 "T2" ///
+		3 "T3" 4 "T4"
+	label value treatment treatment
+	
+	label define age 0 "young" 1 "old"
+	label value age age
+	
+	*generate variable for graphing
+	sort treatment age
+	egen rank = group(treatment age)
+	bys outcome: egen treat_het = rank(rank)
+	
+	*adjust the values to make proper gaps in the graph
+	foreach tnum in 1 2 3 {
+	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
+	}
+	
+	sort outcome treat_het
+	
+	
+	*Looping for age het graph
+	foreach num in 1 2 3 4 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Total ASQ"
+	local fname1 het_hfaz_age
+	local fname2 het_wfaz_age
+	local fname3 het_wflz_age
+	local fname4 het_tasq_age
+	
+	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
+			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
+		   rcap high low treat_het if age ==1,lcolor(gs6) yline(0, lstyle(foreground)) || ///
+			scatter close treat_het if age ==1, mlabel(age)  mlabc(gs6) mlabp(5) m(S) mc(gs6) /// 
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over child age, baseline adjusted") legend(off)  ///
+			note("Black denotes child age < median, gray denotes child age >= median")  || if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/`fname`num''BL", replace
+		}
+
 		
-		
+	********************************************************	
+	*For child age het graph with household characteristics*
+	********************************************************
+import excel "${TABLES}graph3age_hh_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta", replace
+
+use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
+	
+	destring outcome treatment age high low close, replace
+	
+	label define outcome 1 "Dairy intake past 24hr" 2 "Protein intake past 24hr" ///
+		3 "Vitamin A rich foods past 24hr" 4 "Dietary diversity score past 24 hr" ///
+		5 "HOME score"
+	label value outcome outcome
+	
+
+	label define treatment 1 "T1" 2 "T2" ///
+		3 "T3" 4 "T4"
+	label value treatment treatment
+	
+	label define age 0 "young" 1 "old"
+	label value age age
+	
+	*generate variable for graphing
+	sort treatment age
+	egen rank = group(treatment age)
+	bys outcome: egen treat_het = rank(rank)
+	
+	*adjust the values to make proper gaps in the graph
+	foreach tnum in 1 2 3 {
+	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
+	}
+	
+	sort outcome treat_het
+	
+	
+	*Looping for age het graph
+	foreach num in 1 2 3 4 5{
+	local tname1 "Dairy intake past 24hr"
+	local tname2 "Protein intake past 24hr"
+	local tname3 "Vitamin A rich foods past 24hr"
+	local tname4 "Dietary diversity score past 24 hr"
+	local tname5 "HOME score"
+	local fname1 het_dairy_24h_age
+	local fname2 het_meat_egg_24h_age
+	local fname3 het_vitA_24h_age
+	local fname4 het_divers_24h_age
+	local fname5 het_home_score_age
+	
+	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
+			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
+		   rcap high low treat_het if age ==1,lcolor(gs6) yline(0, lstyle(foreground)) || ///
+			scatter close treat_het if age ==1, mlabel(age)  mlabc(gs6) mlabp(5) m(S) mc(gs6) /// 
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over child age") legend(off)  ///
+			note("Black denotes child age < median, gray denotes child age >= median")  || if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/`fname`num''", replace
+		}
 		
 		
 	************************************************************	
 	*For mother education het graph with infant characteristics*
 	************************************************************
 	
-import excel "/Users/Ling/Desktop/MadaTables/graph3momed_child_modified.xlsx", sheet("export") firstrow case(lower) clear
+import excel "${TABLES}graph3momed_child_modified.xlsx", sheet("export") firstrow case(lower) clear
 	
 save "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta", replace
 
@@ -446,11 +626,11 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta" , clear
 		
 		
 		
-	************************************************************	
+	***************************************************************	
 	*For mother education het graph with household characteristics*
 	************************************************************
 
-import excel "/Users/Ling/Desktop/MadaTables/graph3momed_hh_modified.xlsx", sheet("export") firstrow case(lower) clear
+import excel "${TABLES}graph3momed_hh_modified.xlsx", sheet("export") firstrow case(lower) clear
 	
 save "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta", replace
 

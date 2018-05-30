@@ -51,22 +51,22 @@ pdf(paste("/Volumes/Macintosh HD/Users/Ling/Dropbox/Madagascar Mahay Data/analys
     ggtitle("Modeled wflz by age, all measurements")    
   
   # wfaz cont age
-  ggplot(data=wflzcont, aes(x=X_m2,y=X_margin,group=Treatment, colour=Treatment)) +
+  ggplot(data=wfazcont, aes(x=X_m2,y=X_margin,group=Treatment, colour=Treatment)) +
     geom_line(stat="identity", size=2) +
     geom_ribbon(aes(ymin=X_ci_lb, ymax=X_ci_ub, fill=Treatment),alpha=0.2,size=0,colour=NA) +
     theme_bw(base_size=18) +
     ylab("Weight for age z-score") +
     xlab("Age (months)") +
-    ggtitle("Modeled wflz by age, all measurements")    
+    ggtitle("Modeled wfaz by age, all measurements")    
   
   # hfaz cont age
-  ggplot(data=wflzcont, aes(x=X_m2,y=X_margin,group=Treatment, colour=Treatment)) +
+  ggplot(data=hfazcont, aes(x=X_m2,y=X_margin,group=Treatment, colour=Treatment)) +
     geom_line(stat="identity", size=2) +
     geom_ribbon(aes(ymin=X_ci_lb, ymax=X_ci_ub, fill=Treatment),alpha=0.2,size=0,colour=NA) +
     theme_bw(base_size=18) +
     ylab("Height for age z-score") +
     xlab("Age (months)") +
-    ggtitle("Modeled wflz by age, all measurements")    
+    ggtitle("Modeled hfaz by age, all measurements")    
 
 
 dev.off() 

@@ -283,10 +283,10 @@ global fam1 "hhwash knowledge_score"
 global fam2 "mddw foodsecure"
 
 *Fam 6 : For table 3 , second half (home_score2 in ITT infant)
-global fam6 "hygiene_score knowledge_score mddw_score foodSecurityIHS"
+global fam6 "hygiene_score mealprep knowledge_score mddw_score foodSecurityIHS "
 /*
-hygiene_score con
-knowledge_score con
+hygiene_score continuous
+knowledge_score continuous
 mddw_score 0-8
 foodSecurityIHS 1-4
 */
@@ -303,7 +303,7 @@ lab var fanta8 "vitA fruit/veg"
 lab var fanta9 "other veg"
 lab var fanta10 "other fruit"
 lab var protein "dairy, fish/meat/poultry, eggs"
-lab var mddw "minimum diet diversity score"
+lab var mddw_score "minimum diet diversity score"
 
 
 

@@ -13,7 +13,9 @@ ITT-infant: Ling's working branch
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: Dairy, Meat & eggs, vitamin A foods, diet diversity, HOME
 
 ### New figures
-- [ ] developmental outcomes and main effects over treatment arms (6 figures)
+- [x] developmental outcomes and main effects over treatment arms (6 figures)
+      data in ITT graph.do
+      graph in analysis/graph/Main-impact-paper/ITT_graphs
 - [ ] growth outcomes over 3 age cohorts (ML and EL)
 
 

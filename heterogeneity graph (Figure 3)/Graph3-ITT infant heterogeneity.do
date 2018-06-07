@@ -350,21 +350,6 @@ foreach var of varlist $fam2 {
 	est clear
 }
 
-*Child development
-cap erase "${TABLES}child_dev_main_effect.xml"
-cap erase "${TABLES}child_dev_main_effect.txt"
-foreach var of varlist $fam3 {
-	reg `var' i.treatment male infant_age_months i.region i.mother_educ $controls ,  robust cl(grappe)
-		lincom 1.treatment
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-	est clear
-}
 
 
 
@@ -372,7 +357,6 @@ foreach var of varlist $fam3 {
 	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
 	*** added corresponding codes for outcome, heterogeneity and treatment
 	*** saved as graph3age_modified, graph3age_hh_modified, graph3momed_child_modified, graph3momed_hh_modified
-	***			 child_dev_main_effect_modified
 	**********************************************************************************************************
 	
 *Tables adjusted for baseline data
@@ -731,72 +715,6 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 		
 		
 
-	***********************************************************	
-	*      For the main effect on child development           *
-	***********************************************************
-	/*global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
-
-	label var asq_gross_sr "Gross Motor"
-	label var asq_fine_sr "Fine Motor"
-	label var asq_pres_sr "Problem Solving"
-	label var asq_soc_sr  "Socio-Emotional Development"
-	label var asq_comm_sr  "Communication Skills" */
-	
-import excel "${TABLES}child_dev_main_effect_modified.xlsx", sheet("export") firstrow case(lower) clear
-save "${GRAPHS}/Main-impact-paper/child_dev_main_effect.dta", replace
-
-use "${GRAPHS}/Main-impact-paper/child_dev_main_effect.dta" , clear
-
-	destring outcome treatment high low close, replace
-	
-	label define outcome 1 "Gross Motor" 2 "Fine Motor" 3 "Problem Solving" ///
-		 4 "Socio-Emotional Development" 5 "Communication Skills" 6 "Total ASQ"
-	label value outcome outcome
-	
-
-	label define treatment 1 "T1" 2 "T2" 3 "T3" 4 "T4"
-	label value treatment treatment
-
-	
-	*generate variable for graphing
-	gen treat_het = treatment
-	
-	*adjust the values to make proper gaps in the graph
-	foreach tnum in 1 2 3 {
-	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
-	}
-	
-	sort outcome treat_het
-	
-	
-	*Looping for graph
-	foreach num of numlist 1/6 {
-	local tname1 "Gross Motor"
-	local tname2 "Fine Motor"
-	local tname3 "Problem Solving"
-	local tname4 "Socio-Emotional Development"
-	local tname5 "Communication Skills"
-	local tname6 "Total ASQ"
-	local fname1 ITT_dev_GM
-	local fname2 ITT_dev_FM
-	local fname3 ITT_dev_PS
-	local fname4 ITT_dev_SED
-	local fname5 ITT_dev_CS
-	local fname6 ITT_dev_tASQ
-	
-	twoway rcap high low treat_het if treatment == 1 , lcolor("254 226 135") yline(0, lstyle(foreground)) || ///
-			rcap high low treat_het if treatment == 2 , lcolor("240 161 112")  || ///
-			rcap high low treat_het if treatment == 3 , lcolor("179 140 118")  || ///
-			rcap high low treat_het if treatment == 4 , lcolor("96 161 55")  ///	
-			xlabel(1 "T1" 2.5 "T2" 4 "T3" 5.5 "T4") xsc(r(0 6.5)) || ///
-			scatter close treat_het , m(D) mc(gs1) ///
-			xtitle("Treatment group", margin(small) ) ///
-			ytitle("β Coef.") ///
-			title(`tname`num'', margin(b+2.5)) subtitle("Main effects") legend(off) || if outcome == `num'
-											
-		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
-		}
-		
 
 *** ----------------------------------- RUNNING SPECIFICATION WITH COVARIATES ----------------------------------- **;
 *INCLUDES figures code: kdensity for subgroup male only;

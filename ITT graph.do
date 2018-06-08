@@ -196,7 +196,7 @@ keep if year == 2016
 *******************************************************************************
 
 *Fam 1 Variables
-global fam1 "hfaz wfaz wflz"
+global fam1 "hfaz wfaz wflz stunted sevstunted"
 
 	label var hfaz "Height/Age Zscore"
 	label var wfaz "Weight/Age Zscore" 
@@ -361,7 +361,14 @@ save "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 
-	destring treatment agecohort high low close, replace
+	replace outcome = "1" if outcome == "asq_gross_sr"
+	replace outcome = "2" if outcome == "asq_fine_sr"
+	replace outcome = "3" if outcome == "asq_pres_sr"
+	replace outcome = "4" if outcome == "asq_soc_sr"
+	replace outcome = "5" if outcome == "asq_comm_sr"
+	replace outcome = "6" if outcome == "asq_all_sr"
+	
+	destring outcome treatment agecohort high low close, replace
 	
 	label define treatment 1 "T1" 2 "T2" 3 "T3" 4 "T4"
 	label value treatment treatment
@@ -386,7 +393,6 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	
 	*Looping for graph
 	foreach num of numlist 1/6 {
-	foreach outcome of $fam3 {
 	local tname1 "Gross Motor"
 	local tname2 "Fine Motor"
 	local tname3 "Problem Solving"
@@ -401,17 +407,82 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	local fname6 ITT_dev_tASQ_agecohort
 	
 	twoway rcap high low treat_het if agecohort ==1, lcolor("125 141 170") yline(0, lstyle(foreground)) || ///
-			scatter close treat_het if agecohort ==1, mlabel(agecohort)  mlabc("125 141 170")  mlabp(1) m(O) mc("125 141 170")|| ///
-		   rcap high low treat_het if agecohort ==2, lcolor("46 81 166") yline(0, lstyle(foreground)) || ///
-			scatter close treat_het if agecohort ==2, mlabel(agecohort)  mlabc("46 81 166")  mlabp(1) m(D) mc("46 81 166")|| ///
-		   rcap high low treat_het if agecohort ==3, lcolor("26 48 97") yline(0, lstyle(foreground)) || ///
-			scatter close treat_het if agecohort ==3, mlabel(agecohort)  mlabc("26 48 97")  mlabp(1) m(S) mc("26 48 97")|| ///
-			xlabel(2 "T1" 5.5 "T2" 9 "T3" 12.5 "T4") xsc(r(0 14.5)) || ///
+			scatter close treat_het if agecohort ==1,   mlabc("125 141 170")  mlabp(1) m(O) mc("125 141 170") || ///
+		   rcap high low treat_het if agecohort ==2, lcolor("46 81 166") || ///
+			scatter close treat_het if agecohort ==2,  mlabc("46 81 166")  mlabp(1) m(D) mc("46 81 166") || ///
+		   rcap high low treat_het if agecohort ==3, lcolor("26 48 97") || ///
+			scatter close treat_het if agecohort ==3,  mlabc("26 48 97")  mlabp(1) m(S) mc("26 48 97")  ///
+			xlabel(2 "T1" 5.5 "T2" 9 "T3" 12.5 "T4") xsc(r(0 14.5))  ///
 			xtitle("Treatment group", margin(small) ) ///
 			ytitle("β Coef.") ///
-			title(`tname`num'', margin(b+2.5)) subtitle("Main effects by age cohort") legend(off) || if outcome == `outcome'				
+			title(`tname`num'', margin(b+2.5)) subtitle("Main effects by age cohort") ///
+			legend(label(2 "Age cohort A") lab(4 "Age cohort B") lab(6 "Age cohort C") rows(1) order(2 4 6)) || if  outcome ==  `num' 
 		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
 		}
-		}
+		
+	***********************************************************	
+	*      age cohort and child growth        *
+	***********************************************************
+*global fam1 "hfaz wfaz wflz stunted sevstunted"
+	
+import excel "${TABLES}child_growth_agecohort_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta", replace
 
+use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
+
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "stunted"
+	replace outcome = "5" if outcome == "sevstunted"
+	
+	destring outcome treatment agecohort high low close, replace
+	
+	label define treatment 1 "T1" 2 "T2" 3 "T3" 4 "T4"
+	label value treatment treatment
+	
+	label define agecohort 1 "A" 2 "B" 3 "C"
+	label value agecohort agecohort
+	
+	
+
+	*generate variable for graphing
+	sort treatment agecohort
+	egen rank = group(treatment agecohort)
+	bys outcome: egen treat_het = rank(rank)
+	
+	*adjust the values to make proper gaps in the graph
+	foreach tnum in 1 2 3 {
+	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
+	}
+	
+	sort outcome treat_het
+	
+	
+	*Looping for graph
+	foreach num of numlist 1/5 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Stunted"
+	local tname5 "Severely stunted"
+	local fname1 ITT_growth_hfaz_agecohort
+	local fname2 ITT_growth_wfaz_agecohort
+	local fname3 ITT_growth_wflz_agecohort
+	local fname4 ITT_growth_stunted_agecohort
+	local fname5 ITT_growth_sevstunted_agecohort
+	
+	twoway rcap high low treat_het if agecohort ==1, lcolor("125 141 170") yline(0, lstyle(foreground)) || ///
+			scatter close treat_het if agecohort ==1,   mlabc("125 141 170")  mlabp(1) m(O) mc("125 141 170") || ///
+		   rcap high low treat_het if agecohort ==2, lcolor("46 81 166") || ///
+			scatter close treat_het if agecohort ==2,   mlabc("46 81 166")  mlabp(1) m(D) mc("46 81 166") || ///
+		   rcap high low treat_het if agecohort ==3, lcolor("26 48 97") || ///
+			scatter close treat_het if agecohort ==3,  mlabc("26 48 97")  mlabp(1) m(S) mc("26 48 97")  ///
+			xlabel(2 "T1" 5.5 "T2" 9 "T3" 12.5 "T4") xsc(r(0 14.5))  ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("Main effects by age cohort") /// 
+			legend(label(2 "Age cohort A") lab(4 "Age cohort B") lab(6 "Age cohort C") rows(1) order(2 4 6)) || if  outcome ==  `num' 
+		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
+		}
 		

@@ -486,7 +486,7 @@ replace age_pgst = minage if year==2014 & missing(age_pgst) & !missing(minage)
 br idmen year age_pgst minage targeted target
 drop impute_age minage
 
-	save `fulldata'
+	save `fulldata', replace
 
 * Generating age_target, originals based on initial categorization, replacements based on p5-p95 of originals' age range
 
@@ -497,12 +497,15 @@ drop a
 		
 gen age_target =0
 replace age_target = target if existBL==1 & year == 2014
-replace age_target = 1 if existBL == 0 & inrange(infant_age_months,20,26) & year==2016
-replace age_target = 2 if existBL == 0 & inrange(infant_age_months,27,32) & year==2016
-replace age_target = 3 if existBL == 0 & inrange(infant_age_months,33,38) & year==2016
+replace age_target = 1 if existBL == 0 & inrange(infant_age_months,7,13) & year==2015
+replace age_target = 2 if existBL == 0 & inrange(infant_age_months,14,19) & year==2015
+replace age_target = 3 if existBL == 0 & inrange(infant_age_months,20,25) & year==2015
 egen age_cohort=max(age_target), by(idmen)
+replace age_cohort = 1 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,20,26) & year==2016
+replace age_cohort = 2 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,27,32) & year==2016
+replace age_cohort = 3 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,33,38) & year==2016
 count if targeted == 1 & age_cohort == 0 
-*70 targeted children in 2016 do not belong to any age cohort under this criteria
+*49 targeted children in 2016 do not belong to any age cohort under this criteria
 
 
 g sevstunted=(hfaz<=-3) if hfaz!=.

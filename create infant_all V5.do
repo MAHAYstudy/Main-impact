@@ -154,7 +154,7 @@ global d= 8
 	
 	}
 	
-		if $d == 8 {
+	if $d == 8 {
 	* 	Ling
 	global Mada "/Volumes/Macintosh HD/Users/Ling/Dropbox/Madagascar Mahay Data/"
 	*	Baseline folders

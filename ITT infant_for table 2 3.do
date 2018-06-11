@@ -256,6 +256,9 @@ global fam4 "learningop playobj totbook home_score2 role_health role_teach depen
 *Fam 6 : For table 3 , second half : use only home_score2 in the output table for now
 global fam6 "hygiene_score knowledge_score mddw_score home_score2 foodSecurityIHS"
 		
+*Fam 7 : stunted, underwt, wasting
+global fam7 "stunted sevstunted wasting sevwasting underwt sevunderwt"
+		
 *Controls	
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"	
 

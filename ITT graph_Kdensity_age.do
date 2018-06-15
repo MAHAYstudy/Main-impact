@@ -238,9 +238,19 @@ predict hfaz_res, resid
 scatter hfaz_res hfaz_fit if ageold==0, title("hfaz, Young") yline(0)
 graph save "${GRAPHS}Main-impact-paper/ITT_graphs/res_fit_hfaz", replace
 twoway kdensity hfaz_fit if ageold==0 || , title("hfaz, Young") xline(-2) by(treatment)
+*Age < median
 graph save "${GRAPHS}Main-impact-paper/ITT_graphs/kdensity_hfaz_fit", replace
-twoway kdensity hfaz if ageold==0 || , title("hfaz, Young") xline(-2) by(treatment)
+twoway kdensity hfaz if ageold==0 & treatment == 0,  || ///
+		kdensity hfaz if ageold==0 & treatment == 2 || ///
+		kdensity hfaz if ageold==0 & treatment == 3 || ///
+		, legend(label(1 "T0") label(2 "T2") label(3 "T3")) title("hfaz, Young") xline(-2)
 graph save "${GRAPHS}Main-impact-paper/ITT_graphs/kdensity_hfaz", replace
+*Age < median & presented at baseline
+twoway kdensity hfaz if ageold==0 & treatment == 0,  || ///
+		kdensity hfaz if ageold==0 & treatment == 2 || ///
+		kdensity hfaz if ageold==0 & treatment == 3 || ///
+		if existBL==1, legend(label(1 "T0") label(2 "T2") label(3 "T3")) title("hfaz, Young, exist at BL") xline(-2) 
+graph save "${GRAPHS}Main-impact-paper/ITT_graphs/kdensity_hfaz_existBL", replace
 drop hfaz_fit hfaz_res
 
 reg stunted   i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)

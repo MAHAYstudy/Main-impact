@@ -223,7 +223,7 @@ global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	
 	
 *Controls	
-global controls "i.wealth_qui i.birth_order mother_age"
+global controls "i.wealth_qui i.birth_order mother_age "
 	
 	
 	
@@ -253,6 +253,7 @@ recode wealth_qui (1 2 3= 1) (4 5 = 0), gen(wlow)
 di "now start itt"
 
 keep if year == 2016
+
 
 * COVARIATE TABLE (stratified)
 

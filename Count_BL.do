@@ -1,7 +1,16 @@
 clear
 set more off
+capture log close
+version 13
 
-
+*****************************************************************************************
+* FILENAME:  	Count_BL.do
+* PURPOSE:   	Count the precentage in final endline cohort with baseline information on each outcome variable
+* AUTHOR:    	Ling Hsin
+* DATE CREATED:   6/11/18	
+* DATA IN:   	${All_create}infant_All
+* LOG IN:       ${TABLES}Final cohort with BL information
+*****************************************************************************************
 
 * SET GLOBAL MACROS for path to main directories
 
@@ -122,7 +131,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -136,6 +145,8 @@ capture log close
 
 
 
+log using "${TABLES}Final cohort with BL information", replace
+
 
 use "${All_create}infant_All", clear
 
@@ -143,18 +154,18 @@ use "${All_create}infant_All", clear
 
 * age distribution to check (end tail <19 & >38)
 
-tabstat infant_age_months if year==2016 & targeted!=0, by(target) s(min p10 p50 p90 max)
+qui  tabstat infant_age_months if year==2016 & targeted!=0, by(target) s(min p10 p50 p90 max)
 *hist infant_age_months if year==2016 & targeted!=0, xline(20 26 32 38)
-ta infant_age_months if year==2016 & targeted!=0
+qui  ta infant_age_months if year==2016 & targeted!=0
 
 
 *******************************************************************************
 * GLOBAL LIST OF FAMILY OF OUTCOMES;
 *******************************************************************************;
 
- recode bf_bfstart 8=. 9=.
- recode bf_colust  9=.
- recode bf_1sthr 8=. 98=.
+ qui  recode bf_bfstart 8=. 9=.
+ qui  recode bf_colust  9=.
+ qui  recode bf_1sthr 8=. 98=.
  
  ********************************************************************************
 * FOCUS ON THE TARGET CHILD. separate analysis/do file on the younger sibling in 2016 (targeted=0) 
@@ -189,8 +200,7 @@ recode region (4=1) (2=0) (3=0) (5=0) , gen(hautep)
    	
 * variables available only in 2016
 	foreach var of varlist $fam3 asq_gross_sr role_health role_teach depend_health depend_intel ladder_health ladder_intel {
-	display "outcome=`var'"
-	replace `var'=-99 if `var'==. & year<2016
+	qui replace `var'=-99 if `var'==. & year<2016
 	}
 	
 	
@@ -265,194 +275,19 @@ global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"
 * baseline vars are BL`var'
 foreach num in 1 2 4 5 7{
 	foreach var of varlist ${fam`num'} {
-		g d`var'=L2.`var' if year==2016
+		qui g d`var'=L2.`var' if year==2016
 		*replace d`var'=L.`var' if year==2015
-		egen BL`var' = mean(d`var'), by(idmen)
-		drop d`var'
+		qui egen BL`var' = mean(d`var'), by(idmen)
+		qui drop d`var'
 		}
 }
 
-*** Save dataset
-	save "${All_create}ITT_table2.dta", replace
-	desc, s
-	
-
-	
-	
-	
-	
-	
-	
-	use "${All_create}ITT_table2.dta", clear
-	
+keep if year == 2016
 
 
-*-------------------------------------  FINAL  TABLES -------------------------------------------------------
-*-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------
-*--------------------------------------TABLE 2 ITT INFANT----------------------------------------------------
-
-* BASIC TABLE
-
-foreach num of numlist 1 5{
-estimates clear
-foreach var of varlist ${fam`num'} {
-		*0 BASIC - Unadjusted for controls;
-		eststo `var'_Basic: reg `var'  i.treatment  male infant_age_months i.region if year==2016,  robust cl(grappe)
-		qui sum `var' if year==2016 & treatment==0, de 
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd)
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		
+foreach num in 1 2 4 5 7{
+	foreach var of varlist ${fam`num'} {
+		qui sum BL`var'
+		di as text "Precentage with baseline BL`var' information: " as result (r(N)/_N)*100
 		}
-		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ///
-			  ci(fmt(3) label(CI) par)) 
-		}
-
-			
-* COVARIATE TABLE		
-
-foreach num of numlist 1 5 {
-estimates clear 
-foreach var of varlist ${fam`num'} {
-		
-		*1 COVARIATE - Adjusted with controls;
-		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
-		qui sum `var' if year==2016 & treatment==0, de
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd)
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		test 2.treatment =3.treatment
-		estadd scalar p_value_2_3=r(p)
-		test 1.treatment = 2.treatment
-		estadd scalar p_value_1_2=r(p)
-		test 1.treatment = 3.treatment
-		estadd scalar p_value_1_3=r(p)
-		test 1.treatment = 4.treatment
-		estadd scalar p_value_1_4=r(p)
-				}
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
-		}
-		
-
-
-
-* BASELINE-ADJUSTED TABLE
-
-foreach num of numlist 1 5 {
-estimates clear
-foreach var of varlist ${fam`num'} {
-		*2 BASELINE - adjusted with controls and baseline outcomes
-		eststo `var'_Add_BL: reg `var' i.treatment male infant_age_months i.region $controls BL`var' if year==2016, robust cl(grappe)
-		qui sum `var' if year==2016 & treatment==0, de
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd) 
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		}
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
 }
-
-
-estimates clear
-
-
-*-------------------------------------  FINAL  TABLES -------------------------------------------------------*
-*-------------------------------------  ENDLINE RESULTS  ----------------------------------------------------*
-*-------------------------------TABLE 3 INTERMEDIATE INDICATORS ---------------------------------------------*
-
-* BASIC TABLE
-
-foreach num of numlist 2 3 4 6 {
-estimates clear
-foreach var of varlist ${fam`num'} {
-		*0 BASIC - Unadjusted for controls;
-		eststo `var'_Basic: reg `var'  i.treatment  male infant_age_months i.region if year==2016,  robust cl(grappe)
-		qui sum `var' if year==2016 & treatment==0, de 
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd) 
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		
-		}
-		estout using "${TABLES}fam_`num'_itt.txt", replace keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ///
-			  ci(fmt(3) label(CI) par)) 
-		}
-
-			
-* COVARIATE TABLE		
-
-foreach num of numlist 2 3 4 6 {
-estimates clear 
-foreach var of varlist ${fam`num'} {
-		*1 COVARIATE - Adjusted with controls;
-		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
-		qui sum `var' if year==2016 & treatment==0, de
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd)
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		test 2.treatment =3.treatment
-		estadd scalar p_value_2_3=r(p)
-		test 1.treatment = 2.treatment
-		estadd scalar p_value_1_2=r(p)
-		test 1.treatment = 3.treatment
-		estadd scalar p_value_1_3=r(p)
-		test 1.treatment = 4.treatment
-		estadd scalar p_value_1_4=r(p)
-				}
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest p_value_2_3 p_value_1_2 p_value_1_3 p_value_1_4, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
-		}
-		
-foreach var of varlist dairy_24h meat_egg_24h vitA_24h divers_gt4 {
-		tab `var' if year==2016 & treatment==0
-		}
-
-* BASELINE-ADJUSTED TABLE
-
-foreach num of numlist 4 {
-estimates clear
-foreach var of varlist ${fam`num'} {
-		*2 BASELINE - adjusted with controls and baseline outcomes
-		eststo `var'_Add_BL: reg `var' male i.treatment infant_age_months i.region $controls BL`var' if year==2016, robust cl(grappe)
-		qui sum `var' if year==2016 & treatment==0, de
-		estadd scalar mean = r(mean) 
-		estadd scalar sd = r(sd)
-		testparm 1.treatment 2.treatment 3.treatment 4.treatment
-		estadd scalar ftest= round(r(p),.001)
-		test 1.treatment =2.treatment =3.treatment =4.treatment
-		estadd scalar eqtest = round(r(p),.001)
-		}
-		estout using "${TABLES}fam_`num'_itt.txt", append keep(1.treatment 2.treatment 3.treatment 4.treatment) ///
-		stats(r2 r2_a N mean sd ftest eqtest, fmt(%9.3fc)) ///
-		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
-}
-
-
-estimates clear
-
-
-/*
-second half of table, hygiene_score knowledge_score mddw_score foodSecurityIHS 
-see basic TII female_v6

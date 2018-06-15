@@ -196,7 +196,7 @@ keep if year == 2016
 *******************************************************************************
 
 *Fam 1 Variables
-global fam1 "hfaz wfaz wflz stunted sevstunted"
+global fam1 "hfaz wfaz wflz stunted sevstunted wasting sevwasting"
 
 	label var hfaz "Height/Age Zscore"
 	label var wfaz "Weight/Age Zscore" 
@@ -270,9 +270,28 @@ global controls "i.wealth_qui i.birth_order mother_age"
 	}
 	}
 	
+	
+	*5.Child  growth by age cohort, T1234 vs T0
+	
+	tab program treatment, m
+	
+	cap erase "${TABLES}child_growth_agecohort_vsnoprogram.xml"
+	cap erase "${TABLES}child_growth_agecohort_vsnoprogram.txt"
+	foreach var of varlist $fam1 {
+		reg `var' i(1/3).age_cohort##program male i.region i.mother_educ $controls ,  robust cl(grappe)
+			lincom 1.program
+				outreg2 using "${TABLES}child_growth_agecohort_vsnoprogram", keep(i.treatment) nocons excel addt(outcome, `var') adds(agecohort, 1, high, r(ub),low, r(lb),close, r(estimate))
+			lincom 1.program + 1.program#2.age_cohort
+				outreg2 using "${TABLES}child_growth_agecohort_vsnoprogram", keep(i.treatment) nocons excel addt(outcome, `var') adds(agecohort, 2, high, r(ub),low, r(lb),close, r(estimate))
+			lincom 1.program + 1.program#3.age_cohort
+				outreg2 using "${TABLES}child_growth_agecohort_vsnoprogram", keep(i.treatment) nocons excel addt(outcome, `var') adds(agecohort, 3, high, r(ub),low, r(lb),close, r(estimate))
+		est clear
+	}
+	
+	
+	
 	*** high: ub of ci; low: lb of ci; close: beta coef 
 	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
-	*** added corresponding codes for outcome and treatment
 	*** saved as "'filename'_modified"
 	**********************************************************************************************************
 
@@ -423,7 +442,7 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	***********************************************************	
 	*      age cohort and child growth        *
 	***********************************************************
-*global fam1 "hfaz wfaz wflz stunted sevstunted"
+*global fam1 "hfaz wfaz wflz stunted sevstunted wasting sevwasting"
 	
 import excel "${TABLES}child_growth_agecohort_modified.xlsx", sheet("export") firstrow case(lower) clear
 save "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta", replace
@@ -435,6 +454,9 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	replace outcome = "3" if outcome == "wflz"
 	replace outcome = "4" if outcome == "stunted"
 	replace outcome = "5" if outcome == "sevstunted"
+	replace outcome = "6" if outcome == "wasting"
+	replace outcome = "7" if outcome == "sevwasting"
+	cap drop if outcome == "asq_all_sr"
 	
 	destring outcome treatment agecohort high low close, replace
 	
@@ -450,6 +472,7 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	sort treatment agecohort
 	egen rank = group(treatment agecohort)
 	bys outcome: egen treat_het = rank(rank)
+	drop rank
 	
 	*adjust the values to make proper gaps in the graph
 	foreach tnum in 1 2 3 {
@@ -460,17 +483,21 @@ use "${GRAPHS}/Main-impact-paper/child_dev_agecohort.dta" , clear
 	
 	
 	*Looping for graph
-	foreach num of numlist 1/5 {
+	foreach num of numlist 1/7 {
 	local tname1 "Height for age z-score"
 	local tname2 "Weight for age z-score"
 	local tname3 "Weight for length z-score"
 	local tname4 "Stunted"
 	local tname5 "Severely stunted"
+	local tname6 "Wasted"
+	local tname7 "Severly Wasted"
 	local fname1 ITT_growth_hfaz_agecohort
 	local fname2 ITT_growth_wfaz_agecohort
 	local fname3 ITT_growth_wflz_agecohort
 	local fname4 ITT_growth_stunted_agecohort
 	local fname5 ITT_growth_sevstunted_agecohort
+	local fname6 ITT_growth_wasted_agecohort
+	local fname7 ITT_growth_sevwasted_agecohort
 	
 	twoway rcap high low treat_het if agecohort ==1, lcolor("125 141 170") yline(0, lstyle(foreground)) || ///
 			scatter close treat_het if agecohort ==1,   mlabc("125 141 170")  mlabp(1) m(O) mc("125 141 170") || ///

@@ -5,17 +5,22 @@ ITT-infant: Ling's working branch
 
 
 
-### Figure 3 : using Graph3-ITT infant heterogeneity.do
+### Figure 3 : [heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity.do](..heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity)
 - graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
 - file name starts with het_
 - [x] Heterogeneity by young child for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: Dairy, Meat & eggs, vitamin A foods, diet diversity, HOME
 
-### New figures
-- [ ] developmental outcomes and main effects over treatment arms (6 figures)
-- [ ] growth outcomes over 3 age cohorts (ML and EL)
+### New figures: ITT graph.do
+- [x] developmental outcomes and main effects over treatment arms (6 figures)
+- [x] growth outcomes over 3 age cohorts
 
+### All growth graphs: [Madagascar Mahay Data/analysis/graphs/Main-impact-paper/All growth graphs.pdf](https://www.dropbox.com/s/013zh3p2es5e46e/All%20growth%20graphs.pdf?dl=0)
+- Total endline samples, median split by age
+- Without replacements and youngest cohort, median split by age
+- Without replacements and youngest cohort, controlling for baseline data, median split by age
+- Total endline samples, by age cohort
 
 05/16: 
 fixed codes on maternal educ missing values, updated dataset(female & infant)

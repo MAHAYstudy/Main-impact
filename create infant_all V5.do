@@ -510,6 +510,7 @@ count if targeted == 1 & age_cohort == 0
 
 g sevstunted=(hfaz<=-3) if hfaz!=.
 g sevunderwt=(wfaz<=-3) if wfaz!=.
+g sevwasting=(wflz<=-3) if wflz!=.
 lab var sevstunted "severe stunting HAZ<=-3"
 lab var sevunderwt "severe underweight WAZ<=-3"
 * region
@@ -738,5 +739,17 @@ drop if _m==2
 
 drop _m
 sort idmen year
+
+*Indicator for older infants
+sum infant_age_months if year==2016, de
+*median age at EL = 30 months
+g ageold=(infant_age_months>=r(p50)) if year==2016
+	label var ageold "Age target child >= median"
+	
+*Indicator for mother higher education level
+recode mother_ed (0 1 = 0) (2 3 4 9= 1) , gen(edhigh)
+	label var edhigh "Mother education at least secondary"
+	
+recode wealth_qui (1 2 3= 1) (4 5 = 0), gen(wlow)
 
 save "${All_create}infant_All", replace

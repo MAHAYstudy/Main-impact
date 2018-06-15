@@ -14,8 +14,8 @@ ITT-infant: Ling's working branch
 
 ### New figures
 - [x] developmental outcomes and main effects over treatment arms (6 figures)
-  1. data in ITT graph.do
-  2. graph in analysis/graph/Main-impact-paper/ITT_graphs
+      data in ITT graph.do
+      graph in analysis/graph/Main-impact-paper/ITT_graphs
 - [ ] growth outcomes over 3 age cohorts (ML and EL)
 
 

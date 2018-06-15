@@ -5,7 +5,7 @@ ITT-infant: Ling's working branch
 
 
 
-### Figure 3 : [heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity.do](..heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity)
+### Figure 3 : [heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity.do](https://github.com/MAHAYstudy/Main-impact/blob/basic-ITT-infant/heterogeneity%20graph%20(Figure%203)/Graph3-ITT%20infant%20heterogeneity.do)
 - graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
 - file name starts with het_
 - [x] Heterogeneity by young child for each arm and multiple outcomes: HAZ, WAZ, WHZ, ASQ all

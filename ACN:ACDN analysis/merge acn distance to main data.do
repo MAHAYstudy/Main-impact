@@ -74,9 +74,23 @@ save `acn', replace
 restore
 
 merge m:1 grappe year using `acn'
-drop if _merge == 2
 drop _merge
 
 sort idmen year
 
 save "${All_create}ACN_All_wide_distance", replace
+
+browse if id_acn != idacn
+* some are missing id_acn but have idacn
+
+browse if id_acdn !=Didacn
+* the non-matching ones: id_acdn ends in 4, Didacn ends in 2
+
+drop id_acn id_acdn
+
+rename idacn id_acn
+rename Didacn id_acdn
+
+save "${All_create}ACN_All_wide_distance", replace
+
+**idmen_distanceacn data does not include 2014 information

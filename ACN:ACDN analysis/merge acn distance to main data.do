@@ -50,25 +50,31 @@ global d= 8
 	gl GPS_create "${Mada}gps/created_data/"
 	}
 	
+
+
+
+
 	
-* access ACN ALL wide
+* access the acn distance data
+use "${GPS_create}idmen_distanceacn", clear
+preserve
+
+* access ACN ALL
 use "${All_create}/ACN_All_wide.dta", clear
 
 /*
 Identifier:
-ACN_All_wide.dta - idacn
+ACN_All.dta - idacn
 idmen_distanceacn.dta - id_acn, id_acdn
 */
 
-rename idacn id_acn
+tempfile acn
+save `acn', replace
 
-tempfile acnall
-save `acnall', replace
-	
-* access the acn distance data
-use "${GPS_create}idmen_distanceacn", clear
+restore
 
-merge m:1 id_acn year using `acnall'
+merge m:1 grappe year using `acn'
+drop if _merge == 2
 drop _merge
 
 sort idmen year

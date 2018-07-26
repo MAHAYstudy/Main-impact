@@ -193,7 +193,7 @@ drop fpc19b-q1_5
 *******************************************************************************
 
 *Fam 1 Variables
-global fam1 "hfaz wfaz wflz asq_all_sr"
+global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted wasting sevwasting"
 
 	label var hfaz "Height/Age Zscore"
 	label var wfaz "Weight/Age Zscore" 
@@ -204,14 +204,14 @@ global fam1 "hfaz wfaz wflz asq_all_sr"
 
 	
 *Fam 2: Intermediate indicators
-global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2"
+global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2 bd_timesate24hr"
 
 	lab var dairy_24h "dairy, past 24h" // binary
 	lab var meat_egg_24h "proteins, past 24h" // binary
 	lab var vitA_24h "vit A, past 24h" // binary
 	lab var divers_24h "food diversity, past 24h" //categories 0-6
 	label var home_score2 "Home Play"
-
+	
 *Fam 3: child development indicators
 global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
 
@@ -220,21 +220,24 @@ global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	label var asq_pres_sr "Problem Solving"
 	label var asq_soc_sr  "Socio-Emotional Development"
 	label var asq_comm_sr  "Communication Skills"
-
-
+	
+	
 *Controls	
-global controls "i.wealth_qui i.birth_order mother_age"
-
-
-
+global controls "i.wealth_qui i.birth_order mother_age "
+	
+	
+	
 	
 	
 ****************************
 *****Subgroup variables*****
 ****************************
 
+**Indicators - moved to create infant_all V5
+/*
 *Indicator for older infants
 sum infant_age_months if year==2016, de
+*median age at EL = 30 months
 g ageold=(infant_age_months>=r(p50)) if year==2016
 	label var ageold "Age target child >= median"
 	
@@ -243,62 +246,72 @@ recode mother_ed (0 1 = 0) (2 3 4 9= 1) , gen(edhigh)
 	label var edhigh "Mother education at least secondary"
 	
 recode wealth_qui (1 2 3= 1) (4 5 = 0), gen(wlow)
+*/
 
-
-
+ 
 
 di "now start itt"
 
 keep if year == 2016
+
 
 * COVARIATE TABLE (stratified)
 
 *age and child characteristics
 cap erase "${TABLES}graph3age.xml"
 cap erase "${TABLES}graph3age.txt"
+foreach num of numlist 1/4 {
 foreach var of varlist $fam1 {
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)
-		lincom 1.treatment 
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 1.treatment + 1.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment + 2.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment + 3.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment + 4.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment 
+			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
+}
+
+*age and child characteristics, the cohort with baseline information
+cap erase "${TABLES}graph3age_originalcohort.xml"
+cap erase "${TABLES}graph3age_originalcohort.txt"
+foreach num of numlist 1/4 {
+foreach var of varlist $fam1 {
+	reg `var' i.treatment##ageold male i.region i.mother_educ $controls if BL`var' !=. ,  robust cl(grappe)
+		lincom `num'.treatment 
+			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+	est clear
+}
+}
+
+*age and child characteristics - adjusted for baseline data
+cap erase "${TABLES}graph3age_child_BLadj.xml"
+cap erase "${TABLES}graph3age_child_BLadj.txt"
+foreach num of numlist 1/4 {
+foreach var of varlist $fam1 {
+	reg `var' i.treatment##ageold male i.region i.mother_educ $controls BL`var', robust cl(grappe)
+		lincom `num'.treatment 
+			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+	est clear
+}
+}
+	
 
 *age and household characteristics
 cap erase "${TABLES}graph3age_hh.xml"
 cap erase "${TABLES}graph3age_hh.txt"
+foreach num of numlist 1/4 {
 foreach var of varlist $fam2 {
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)
-		lincom 1.treatment 
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 1.treatment + 1.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment + 2.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment + 3.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment + 4.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment 
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + 1.treatment#1.ageold
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
+}
 }
 
 *Mother education and child characteristics
@@ -350,62 +363,19 @@ foreach var of varlist $fam2 {
 	est clear
 }
 
-*Child development
-cap erase "${TABLES}child_dev_main_effect.xml"
-cap erase "${TABLES}child_dev_main_effect.txt"
-foreach var of varlist $fam3 {
-	reg `var' i.treatment male infant_age_months i.region i.mother_educ $controls ,  robust cl(grappe)
-		lincom 1.treatment
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}child_dev_main_effect", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-	est clear
-}
 
 
 
 	*** high: ub of ci; low: lb of ci; close: beta coef 
 	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
-	*** added corresponding codes for outcome, heterogeneity and treatment
-	*** saved as graph3age_modified, graph3age_hh_modified, graph3momed_child_modified, graph3momed_hh_modified
-	***			 child_dev_main_effect_modified
+	*** saved as filename_modified
 	**********************************************************************************************************
 	
-*Tables adjusted for baseline data
+
 	
-	*age and child characteristics
-	cap erase "${TABLES}graph3age_child_BLadj.xml"
-	cap erase "${TABLES}graph3age_child_BLadj.txt"
-	foreach var of varlist $fam1 {
-		reg `var' i.treatment##ageold male i.region i.mother_educ $controls BL`var', robust cl(grappe)
-			lincom 1.treatment 
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 2.treatment 
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 3.treatment 
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 4.treatment 
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 1.treatment + 1.treatment#1.ageold
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 2.treatment + 2.treatment#1.ageold
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 3.treatment + 3.treatment#1.ageold
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-			lincom 4.treatment + 4.treatment#1.ageold
-				outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		est clear
-	}
+
+
 	
-	*** high: ub of ci; low: lb of ci; close: beta coef 
-	*** output data edited: sheet transposed, pasted last three lines(high low close) to sheet "export"
-	*** added corresponding codes for outcome, heterogeneity and treatment
-	*** saved as graph3age_child_BLadj_modified
-	**********************************************************************************************************
 
 
 	
@@ -421,11 +391,20 @@ foreach var of varlist $fam3 {
 	************************************************************	
 	*For child age het graph with infant characteristics*
 	************************************************************
-	
+	*global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted  wasting sevwasting"
 import excel "${TABLES}graph3age_modified.xlsx", sheet("export") firstrow case(lower) clear
 save "${GRAPHS}/Main-impact-paper/graph3_age.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
+
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "asq_all_sr"
+	replace outcome = "5" if outcome == "stunted"
+	replace outcome = "6" if outcome == "sevstunted"
+	replace outcome = "7" if outcome == "wasting"
+	replace outcome = "8" if outcome == "sevwasting"
 
 	destring outcome treatment age high low close, replace
 	
@@ -455,15 +434,23 @@ use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
 	
 	
 	*Looping for age het graph
-	foreach num in 1 2 3 4 {
+	foreach num of numlist 1/8 {
 	local tname1 "Height for age z-score"
 	local tname2 "Weight for age z-score"
 	local tname3 "Weight for length z-score"
 	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Severely Stunted"
+	local tname7 "Wasting"
+	local tname8 "Severely Wasting"
 	local fname1 het_hfaz_age
 	local fname2 het_wfaz_age
 	local fname3 het_wflz_age
 	local fname4 het_tasq_age
+	local fname5 het_stun_age
+	local fname6 het_sevstun_age
+	local fname7 het_wasting_age
+	local fname8 het_sevwastnig_age
 	
 	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
 			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
@@ -477,15 +464,26 @@ use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
 											
 		graph save "${GRAPHS}Main-impact-paper/`fname`num''", replace
 		}
-
-	*********************************************************************
-	*For child age het graph with infant characteristics adjusted for BL*
-	*********************************************************************
 	
-import excel "${TABLES}graph3age_child_BLadj_modified.xlsx", sheet("export") firstrow case(lower) clear
-save "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta", replace
+	
+	
+	************************************************************	
+	*For child age het graph with infant characteristics, original cohort*
+	************************************************************
+	*global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted  wasting sevwasting"
+import excel "${TABLES}graph3age_originalcohort_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/graph3age_originalcohort.dta", replace
 
-use "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta" , clear
+use "${GRAPHS}/Main-impact-paper/graph3age_originalcohort.dta" , clear
+
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "asq_all_sr"
+	replace outcome = "5" if outcome == "stunted"
+	replace outcome = "6" if outcome == "sevstunted"
+	replace outcome = "7" if outcome == "wasting"
+	replace outcome = "8" if outcome == "sevwasting"
 
 	destring outcome treatment age high low close, replace
 	
@@ -515,15 +513,103 @@ use "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta" , clear
 	
 	
 	*Looping for age het graph
-	foreach num in 1 2 3 4 {
+	foreach num of numlist 1/8 {
 	local tname1 "Height for age z-score"
 	local tname2 "Weight for age z-score"
 	local tname3 "Weight for length z-score"
 	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Severely Stunted"
+	local tname7 "Wasting"
+	local tname8 "Severely Wasting"
 	local fname1 het_hfaz_age
 	local fname2 het_wfaz_age
 	local fname3 het_wflz_age
 	local fname4 het_tasq_age
+	local fname5 het_stun_age
+	local fname6 het_sevstun_age
+	local fname7 het_wasting_age
+	local fname8 het_sevwastnig_age
+	
+	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
+			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
+		   rcap high low treat_het if age ==1,lcolor(gs6) yline(0, lstyle(foreground)) || ///
+			scatter close treat_het if age ==1, mlabel(age)  mlabc(gs6) mlabp(5) m(S) mc(gs6) /// 
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over child age, without replacement households") legend(off)  ///
+			note("Black denotes child age < median, gray denotes child age >= median")  || if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/`fname`num''_original", replace
+		}
+
+	
+	
+	
+	*********************************************************************
+	*For child age het graph with infant characteristics adjusted for BL*
+	*********************************************************************
+	*global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted  wasting sevwasting"
+import excel "${TABLES}graph3age_child_BLadj_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta", replace
+
+use "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta" , clear
+	
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "asq_all_sr"
+	replace outcome = "5" if outcome == "stunted"
+	replace outcome = "6" if outcome == "sevstunted"
+	replace outcome = "7" if outcome == "wasting"
+	replace outcome = "8" if outcome == "sevwasting"
+	
+	destring outcome treatment age high low close, replace
+	
+	label define outcome 1 "Height for age Z score" 2 "Weight for age Z score" ///
+		3 "Weight for length Z score" 4 "Total ASQ"
+	label value outcome outcome
+	
+
+	label define treatment 1 "T1" 2 "T2" ///
+		3 "T3" 4 "T4"
+	label value treatment treatment
+	
+	label define age 0 "young" 1 "old"
+	label value age age
+	
+	*generate variable for graphing
+	sort treatment age
+	egen rank = group(treatment age)
+	bys outcome: egen treat_het = rank(rank)
+	
+	*adjust the values to make proper gaps in the graph
+	foreach tnum in 1 2 3 {
+	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
+	}
+	
+	sort outcome treat_het
+	
+	
+	*Looping for age het graph
+	foreach num of numlist 1/8 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Severely Stunted"
+	local tname7 "Wasting"
+	local tname8 "Severely Wasting"
+	local fname1 het_hfaz_age
+	local fname2 het_wfaz_age
+	local fname3 het_wflz_age
+	local fname4 het_tasq_age
+	local fname5 het_stun_age
+	local fname6 het_sevstun_age
+	local fname7 het_wasting_age
+	local fname8 het_sevwastnig_age
 	
 	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
 			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
@@ -542,10 +628,18 @@ use "${GRAPHS}/Main-impact-paper/graph3age_child_BLadj_modified.dta" , clear
 	********************************************************	
 	*For child age het graph with household characteristics*
 	********************************************************
+	*global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2 bd_timesate24hr"
 import excel "${TABLES}graph3age_hh_modified.xlsx", sheet("export") firstrow case(lower) clear
 save "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
+	
+	replace outcome = "1" if outcome == "dairy_24h"
+	replace outcome = "2" if outcome == "meat_egg_24h"
+	replace outcome = "3" if outcome == "vitA_24h"
+	replace outcome = "4" if outcome == "divers_24h"
+	replace outcome = "5" if outcome == "home_score2"
+	replace outcome = "6" if outcome == "bd_timesate24hr"
 	
 	destring outcome treatment age high low close, replace
 	
@@ -576,17 +670,19 @@ use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
 	
 	
 	*Looping for age het graph
-	foreach num in 1 2 3 4 5{
+	foreach num of numlist 1/6 {
 	local tname1 "Dairy intake past 24hr"
 	local tname2 "Protein intake past 24hr"
 	local tname3 "Vitamin A rich foods past 24hr"
 	local tname4 "Dietary diversity score past 24 hr"
 	local tname5 "HOME score"
+	local tname6 "Meal frequency past 24hr"
 	local fname1 het_dairy_24h_age
 	local fname2 het_meat_egg_24h_age
 	local fname3 het_vitA_24h_age
 	local fname4 het_divers_24h_age
 	local fname5 het_home_score_age
+	local fname6 het_mealfrquency_age
 	
 	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
 			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
@@ -731,72 +827,6 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 		
 		
 
-	***********************************************************	
-	*      For the main effect on child development           *
-	***********************************************************
-	/*global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
-
-	label var asq_gross_sr "Gross Motor"
-	label var asq_fine_sr "Fine Motor"
-	label var asq_pres_sr "Problem Solving"
-	label var asq_soc_sr  "Socio-Emotional Development"
-	label var asq_comm_sr  "Communication Skills" */
-	
-import excel "${TABLES}child_dev_main_effect_modified.xlsx", sheet("export") firstrow case(lower) clear
-save "${GRAPHS}/Main-impact-paper/child_dev_main_effect.dta", replace
-
-use "${GRAPHS}/Main-impact-paper/child_dev_main_effect.dta" , clear
-
-	destring outcome treatment high low close, replace
-	
-	label define outcome 1 "Gross Motor" 2 "Fine Motor" 3 "Problem Solving" ///
-		 4 "Socio-Emotional Development" 5 "Communication Skills" 6 "Total ASQ"
-	label value outcome outcome
-	
-
-	label define treatment 1 "T1" 2 "T2" 3 "T3" 4 "T4"
-	label value treatment treatment
-
-	
-	*generate variable for graphing
-	gen treat_het = treatment
-	
-	*adjust the values to make proper gaps in the graph
-	foreach tnum in 1 2 3 {
-	replace treat_het = (treat_het + `tnum'*0.5) if treatment == `tnum'+1
-	}
-	
-	sort outcome treat_het
-	
-	
-	*Looping for graph
-	foreach num of numlist 1/6 {
-	local tname1 "Gross Motor"
-	local tname2 "Fine Motor"
-	local tname3 "Problem Solving"
-	local tname4 "Socio-Emotional Development"
-	local tname5 "Communication Skills"
-	local tname6 "Total ASQ"
-	local fname1 ITT_dev_GM
-	local fname2 ITT_dev_FM
-	local fname3 ITT_dev_PS
-	local fname4 ITT_dev_SED
-	local fname5 ITT_dev_CS
-	local fname6 ITT_dev_tASQ
-	
-	twoway rcap high low treat_het if treatment == 1 , lcolor("254 226 135") yline(0, lstyle(foreground)) || ///
-			rcap high low treat_het if treatment == 2 , lcolor("240 161 112")  || ///
-			rcap high low treat_het if treatment == 3 , lcolor("179 140 118")  || ///
-			rcap high low treat_het if treatment == 4 , lcolor("96 161 55")  ///	
-			xlabel(1 "T1" 2.5 "T2" 4 "T3" 5.5 "T4") xsc(r(0 6.5)) || ///
-			scatter close treat_het , m(D) mc(gs1) ///
-			xtitle("Treatment group", margin(small) ) ///
-			ytitle("β Coef.") ///
-			title(`tname`num'', margin(b+2.5)) subtitle("Main effects") legend(off) || if outcome == `num'
-											
-		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
-		}
-		
 
 *** ----------------------------------- RUNNING SPECIFICATION WITH COVARIATES ----------------------------------- **;
 *INCLUDES figures code: kdensity for subgroup male only;

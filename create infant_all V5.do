@@ -1,6 +1,7 @@
 clear
 set more off
 version 13
+tempfile fulldata
 
 
 * SET GLOBAL MACROS for path to main directories
@@ -153,7 +154,7 @@ global d= 8
 	
 	}
 	
-		if $d == 8 {
+	if $d == 8 {
 	* 	Ling
 	global Mada "/Volumes/Macintosh HD/Users/Ling/Dropbox/Madagascar Mahay Data/"
 	*	Baseline folders
@@ -485,25 +486,31 @@ replace age_pgst = minage if year==2014 & missing(age_pgst) & !missing(minage)
 br idmen year age_pgst minage targeted target
 drop impute_age minage
 
-* Generating age_target based on age at start of program
-gen age_target = .
-replace age_target = 1 if age_pgst <0 & !missing(age_pgst)
-replace age_target = 2 if age_pgst>=0 & age_pgst<6 & !missing(age_pgst)
-replace age_target = 3 if age_pgst>6 & !missing(age_pgst)
-replace age_target = 1 if missing(age_pgst) & year==2014 & target==1 // 1248 corresponding to the infants not born at baseline
+	save `fulldata', replace
 
-* There are a total of 860 missing values of age_target, because we don't have birthday information for these households
-* Using infant_age_months to fill in these missing values
-replace age_target = 2 if missing(age_target) & (infant_age_months > 0 & infant_age_months<6) & year==2014
-replace age_target = 3 if missing(age_target) & (infant_age_months >= 6 & !missing(infant_age_months)) & year==2014
-replace age_target = 2 if missing(age_target) & inrange(infant_age_months,12,17) & year==2015
-replace age_target = 3 if missing(age_target) & inrange(infant_age_months,18,30) & year==2015
-replace age_target = 1 if missing(age_target) & infant_age_months<24 & year==2016
-replace age_target = 2 if missing(age_target) & inrange(infant_age_months,24,29) & year==2016
-replace age_target = 3 if missing(age_target) & inrange(infant_age_months,30,42) & year==2016
+* Generating age_target, originals based on initial categorization, replacements based on p5-p95 of originals' age range
+
+g a=1 if year==2014
+replace a=0 if a!=1
+egen existBL=sum(a), by(idmen)
+drop a
+		
+gen age_target =0
+replace age_target = target if existBL==1 & year == 2014
+replace age_target = 1 if existBL == 0 & inrange(infant_age_months,7,13) & year==2015
+replace age_target = 2 if existBL == 0 & inrange(infant_age_months,14,19) & year==2015
+replace age_target = 3 if existBL == 0 & inrange(infant_age_months,20,25) & year==2015
+egen age_cohort=max(age_target), by(idmen)
+replace age_cohort = 1 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,20,26) & year==2016
+replace age_cohort = 2 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,27,32) & year==2016
+replace age_cohort = 3 if existBL == 0 & age_cohort ==0 & inrange(infant_age_months,33,38) & year==2016
+count if targeted == 1 & age_cohort == 0 
+*49 targeted children in 2016 do not belong to any age cohort under this criteria
+
 
 g sevstunted=(hfaz<=-3) if hfaz!=.
 g sevunderwt=(wfaz<=-3) if wfaz!=.
+g sevwasting=(wflz<=-3) if wflz!=.
 lab var sevstunted "severe stunting HAZ<=-3"
 lab var sevunderwt "severe underweight WAZ<=-3"
 * region
@@ -732,5 +739,17 @@ drop if _m==2
 
 drop _m
 sort idmen year
+
+*Indicator for older infants
+sum infant_age_months if year==2016, de
+*median age at EL = 30 months
+g ageold=(infant_age_months>=r(p50)) if year==2016
+	label var ageold "Age target child >= median"
+	
+*Indicator for mother higher education level
+recode mother_ed (0 1 = 0) (2 3 4 9= 1) , gen(edhigh)
+	label var edhigh "Mother education at least secondary"
+	
+recode wealth_qui (1 2 3= 1) (4 5 = 0), gen(wlow)
 
 save "${All_create}infant_All", replace

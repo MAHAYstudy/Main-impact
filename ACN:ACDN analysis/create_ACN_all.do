@@ -330,7 +330,7 @@ keep grappe year tacn baseline_* turnover* idacn acn_age acn_marstatus ///
 acn_nokids acn_otheractiv acn_edulevel acn_religion acn_wealth_index ///
 act_curr_agri act_curr_trader act_bef_agri act_bef_trader act_bef_teacher ///
 acn_knowledge_score acn_hygiene_score ///
-acn_mot* v_tot
+motivation_score mot_* v_tot
 
 * keep one observation per grappe (reshaped wide)
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///

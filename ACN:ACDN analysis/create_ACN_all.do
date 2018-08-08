@@ -336,11 +336,11 @@ acn_mot* v_tot
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
  acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
  act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score ///
- acn_mot* v_tot : g DX=X if tacn==2
+ acn_mot* mot_* v_tot : g DX=X if tacn==2
  
 for var idacn acn_age acn_marstatus acn_nokids acn_otheractiv acn_edulevel ///
 acn_religion acn_wealth_index act_curr_agri act_curr_trader act_bef_agri ///
-act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score acn_mot* v_tot: replace X=. if tacn==2
+act_bef_trader act_bef_teacher acn_knowledge_score acn_hygiene_score acn_mot* mot_* v_tot: replace X=. if tacn==2
 
 collapse idacn* acn* turnover_* baseline* D*, by(grappe year)
 drop if grappe==.

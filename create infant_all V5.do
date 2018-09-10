@@ -579,27 +579,56 @@ recode hholdobj 2=0 if year>2014
 recode playobj 99=.
 recode genbook 25=15
 
-#delimit ;
-set more off;
-gen home_score=.;
-gen home_score2=.;
-*gen home_std=.;
-forval t=4/6 {;	
-	pca learningop leftchild leftalone noadult playobj play3 MOMactiv DADactiv OTHactiv NOactiv if year==201`t';
-	predict home_score_`t';
-	su home_score_`t';
-	
-	factor readbook toldstory sangsong tookout spenttime playobj played genbook childbook  if year==201`t';
-	predict home_score2_`t';
-		
-	replace home_score=home_score_`t' if year==201`t';
-	replace home_score2=home_score2_`t' if year==201`t';
-		
-	drop home_score_`t'  home_score2_`t';
 
-	};
-lab var home_score "pca learning opport, play objects and activities";
-lab var home_score2 "pca activities, play materials and books";
+set more off
+gen home_score=.
+gen home_score2=.
+
+
+* 9/8/18 re-create home scores LH
+*list for subscales: number of total books / source of play object (4 Categories) / Varieties of play materials (7)/ Play activities (6)
+	*total number of books
+	recode totbook 0=1 5=2 10=3
+	replace totbook = 4 if totbook > 10
+	label de totbook 1 "0 books" 2 "1-10 books, either general or children's" ///
+					 3 "1-10 books, both general and children's" 4 "more than 10 books"
+	
+	*source of play objects
+	egen source_playobj = rowtotal(fl05 fl06 fl07 fl08)
+	label var source_playobj "source of play objects"
+	
+	*no varieties data, use number of play objects instead
+	
+	*Play activities
+	egen playactiv = rowtotal(readbook toldstory sangsong tookout played spenttime)
+	
+	egen home_score_FCI_sum = rowtotal(totbook source_playobj play3 playactiv)
+	lab var home_score_FCI_sum "sum of total books/ source, number of play object/Play activities"
+	
+	pca totbook source_playobj play3 playactiv
+	rotate
+	predict home_score_FCI_pca
+	lab var home_score_FCI_pca "pca of total books/ source, number of play object/Play activities"
+	
+forval t=4/6 {
+	pca learningop leftchild leftalone noadult playobj play3 MOMactiv DADactiv OTHactiv NOactiv if year==201`t'
+	rotate 
+	predict home_score_`t'
+	su home_score_`t'
+	
+	factor readbook toldstory sangsong tookout spenttime playobj played genbook childbook  if year==201`t'
+	rotate 
+	predict home_score2_`t'
+
+		
+	replace home_score=home_score_`t' if year==201`t'
+	replace home_score2=home_score2_`t' if year==201`t'
+		
+	drop home_score_`t'  home_score2_`t'
+
+	}
+lab var home_score "pca learning opport, play objects and activities"
+lab var home_score2 "pca activities, play materials and books"
 
 
 * eg: FROM FEMALE_ALL V2.DO impute grappe, treatment when missing
@@ -609,15 +638,15 @@ egen tm=max(treatment), by(grappe)
 replace treatment=tm if treatment==. & tm!=.
 
 * indicator of replacements (fix outliers and baseline);
-recode condition 2=1 if year==2016;
-replace condition=1 if year==2014;
+recode condition 2=1 if year==2016
+replace condition=1 if year==2014
 
-count if missing(idmen);
-if `r(N)'==2 {;
-	drop if missing(idmen);
-};
+count if missing(idmen)
+if `r(N)'==2 {
+	drop if missing(idmen)
+}
 
-#delimit cr
+
 sort idmen year
 
 save "${All_create}infant_All", replace

@@ -649,6 +649,8 @@ if `r(N)'==2 {
 
 sort idmen year
 
+drop clone*
+
 save "${All_create}infant_All", replace
 
 
@@ -671,6 +673,7 @@ ac_yesno ac_mpreg1stvisit ac_mpreglastvisit rf_factor pr_factor hygiene_score kn
 causediar causetyph causethinkid causenowalk causemalnur
 mddw_score time_own time_study time_chores time_care time_work time_social time_other 
 garbage hwater_available_obs hhandwashing_obs htoilette db13cb*
+pr_*
 ;
 
 #delimit cr
@@ -780,5 +783,6 @@ recode mother_ed (0 1 = 0) (2 3 4 9= 1) , gen(edhigh)
 	label var edhigh "Mother education at least secondary"
 	
 recode wealth_qui (1 2 3= 1) (4 5 = 0), gen(wlow)
+
 
 save "${All_create}infant_All", replace

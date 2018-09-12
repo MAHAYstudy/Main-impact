@@ -183,7 +183,6 @@ use "${All_create}ITT_table2.dta", clear
 drop fpc01-a204
 drop fb02fenc-fd16c_s
 drop fpg_demo99-fpc_rawtot
-drop clonefpc01-clonefpc_1pl_sresid
 drop fpc19_rc-fps37_rc
 drop fl09a_0-fd28a_5
 drop fpc19b-q1_5
@@ -204,13 +203,13 @@ global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted wasting sevwasting"
 
 	
 *Fam 2: Intermediate indicators
-global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2 bd_timesate24hr"
+global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score_FCI_pca bd_timesate24hr"
 
 	lab var dairy_24h "dairy, past 24h" // binary
 	lab var meat_egg_24h "proteins, past 24h" // binary
 	lab var vitA_24h "vit A, past 24h" // binary
 	lab var divers_24h "food diversity, past 24h" //categories 0-6
-	label var home_score2 "Home Play"
+	label var home_score_FCI_pca "Home Play"
 	
 *Fam 3: child development indicators
 global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
@@ -221,6 +220,8 @@ global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	label var asq_soc_sr  "Socio-Emotional Development"
 	label var asq_comm_sr  "Communication Skills"
 	
+*Fam 6 : 
+global fam6 "home_score2 home_score_FCI_sum home_score_FCI_pca"
 	
 *Controls	
 global controls "i.wealth_qui i.birth_order mother_age "
@@ -261,12 +262,12 @@ keep if year == 2016
 cap erase "${TABLES}graph3age.xml"
 cap erase "${TABLES}graph3age.txt"
 foreach num of numlist 1/4 {
-foreach var of varlist $fam1 {
+foreach var of varlist $fam1 $fam3{
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
 }
@@ -275,12 +276,12 @@ foreach var of varlist $fam1 {
 cap erase "${TABLES}graph3age_originalcohort.xml"
 cap erase "${TABLES}graph3age_originalcohort.txt"
 foreach num of numlist 1/4 {
-foreach var of varlist $fam1 {
+foreach var of varlist $fam1 $fam3 {
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls if BL`var' !=. ,  robust cl(grappe)
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
 }
@@ -289,12 +290,12 @@ foreach var of varlist $fam1 {
 cap erase "${TABLES}graph3age_child_BLadj.xml"
 cap erase "${TABLES}graph3age_child_BLadj.txt"
 foreach num of numlist 1/4 {
-foreach var of varlist $fam1 {
+foreach var of varlist $fam1 $fam3 {
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls BL`var', robust cl(grappe)
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
 }
@@ -304,12 +305,12 @@ foreach var of varlist $fam1 {
 cap erase "${TABLES}graph3age_hh.xml"
 cap erase "${TABLES}graph3age_hh.txt"
 foreach num of numlist 1/4 {
-foreach var of varlist $fam2 {
+foreach var of varlist $fam2 $fam6 {
 	reg `var' i.treatment##ageold male i.region i.mother_educ $controls ,  robust cl(grappe)
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + 1.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
 }
@@ -317,52 +318,31 @@ foreach var of varlist $fam2 {
 *Mother education and child characteristics
 cap erase "${TABLES}graph3momed_child.xml"
 cap erase "${TABLES}graph3momed_child.txt"
-foreach var of varlist $fam1 {
+foreach num of numlist 1/4 {
+foreach var of varlist $fam1 $fam3 {
 	reg `var' i.treatment##mother_ed male infant_age_months i.region  $controls ,  robust cl(grappe)
-		lincom 1.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 1.treatment + 1.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment + 2.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment + 3.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment + 4.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment 
+			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.mother_ed
+			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 	est clear
+}
 }
 
 
 *Mother education and household characteristics
 cap erase "${TABLES}graph3momed_hh.xml"
 cap erase "${TABLES}graph3momed_hh.txt"
-foreach var of varlist $fam2 {
+foreach num of numlist 1/4 {
+foreach var of varlist $fam2 $fam6 {
 	reg `var' i.treatment##mother_ed male infant_age_months i.region $controls ,  robust cl(grappe)
-		lincom 1.treatment
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment 
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment 
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment 
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 1.treatment + 1.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 2.treatment + 2.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 3.treatment + 3.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom 4.treatment + 4.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment
+			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.mother_ed
+			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
 	est clear
 }
-
+}
 
 
 
@@ -376,15 +356,21 @@ foreach var of varlist $fam2 {
 
 
 	
+*Home Environment
+cap erase "${TABLES}homescore_treatment.xml"
+cap erase "${TABLES}homescore_treatment.txt"
+foreach var of varlist $fam2 $fam3 {
+	reg `var' i.treatment##c.home_score_FCI_pca male infant_age_months i.region $controls ,  robust cl(grappe)
+	outreg2 using "${TABLES}homescore_treatment", keep(treatment#c.home_score_FCI_pca) nocons excel ///
+	alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
+					 title("homescore heterogeneity")
+					 est clear
+}
 
 
+
 	
-	
-	
-	
-	
-	
-	
+
 	
 	
 	

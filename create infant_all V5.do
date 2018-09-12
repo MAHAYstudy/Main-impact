@@ -588,10 +588,11 @@ gen home_score2=.
 * 9/8/18 re-create home scores LH
 *list for subscales: number of total books / source of play object (4 Categories) / Varieties of play materials (7)/ Play activities (6)
 	*total number of books
-	recode totbook 0=1 5=2 10=3
-	replace totbook = 4 if totbook > 10
-	label de totbook 1 "0 books" 2 "1-10 books, either general or children's" ///
-					 3 "1-10 books, both general and children's" 4 "more than 10 books"
+	recode totbook 5=1 10=2
+	replace totbook = 3 if totbook > 10
+	label de totbook 0 "0 books" 1 "1-10 books, either general or children's" /// *change the code
+					 2 "1-10 books, both general and children's" 3 "more than 10 books"
+	label val totbook totbook
 	
 	*source of play objects
 	egen source_playobj = rowtotal(fl05 fl06 fl07 fl08)
@@ -599,25 +600,42 @@ gen home_score2=.
 	
 	*no varieties data, use number of play objects instead
 	
+	
 	*Play activities
 	egen playactiv = rowtotal(readbook toldstory sangsong tookout played spenttime)
 	
 	egen home_score_FCI_sum = rowtotal(totbook source_playobj play3 playactiv)
 	lab var home_score_FCI_sum "sum of total books/ source, number of play object/Play activities"
+
 	
-	pca totbook source_playobj play3 playactiv
-	rotate
+	
+	pca totbook source_playobj play3 playactiv, com(2) blanks(.3)
 	predict home_score_FCI_pca
 	lab var home_score_FCI_pca "pca of total books/ source, number of play object/Play activities"
 	
+			*if play3 weighted 
+			gen play3weighted = play3
+			recode play3weighted 1=3
+			
+			egen home_score_FCI = rowtotal(totbook source_playobj play3weighted playactiv)
+			lab var home_score_FCI_sum "sum of books/source, number of play object(3)/Play activities"
+			
+			regr home_score_FCI home_score_FCI_pca
+			predict wsum_pca
+			twoway (scatter home_score_FCI home_score_FCI_pca) (line wsum_pca home_score_FCI_pca)
+			
+			regr home_score_FCI_sum home_score_FCI_pca
+			predict sum_pca
+			twoway (scatter home_score_FCI_sum home_score_FCI_pca) (line sum_pca home_score_FCI_pca)
+			
+			drop wsum_pca sum_pca
+			
 forval t=4/6 {
-	pca learningop leftchild leftalone noadult playobj play3 MOMactiv DADactiv OTHactiv NOactiv if year==201`t'
-	rotate 
+	pca learningop playobj play3 MOMactiv DADactiv OTHactiv if year==201`t'
 	predict home_score_`t'
 	su home_score_`t'
 	
 	factor readbook toldstory sangsong tookout spenttime playobj played genbook childbook  if year==201`t'
-	rotate 
 	predict home_score2_`t'
 
 		

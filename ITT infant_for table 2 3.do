@@ -122,7 +122,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES  "${Mada}analysis/tables/" 
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -253,8 +253,8 @@ global fam4 "learningop playobj totbook home_score2 role_health role_teach depen
 	label var depend_intel "Affect Intel?"
 	label var ladder_health "Health Status"
 	label var ladder_intel "Intel Status"
-*Fam 6 : For table 3 , second half : use only home_score2 in the output table for now
-global fam6 "hygiene_score knowledge_score mddw_score home_score2 foodSecurityIHS"
+*Fam 6 : For table 3 , second half 
+global fam6 "home_score2 home_score_FCI_sum home_score_FCI_pca"
 		
 *Fam 7 : underwt, wasting
 global fam7 "wasting sevwasting underwt sevunderwt"
@@ -263,7 +263,7 @@ global fam7 "wasting sevwasting underwt sevunderwt"
 global controls "i.mother_educ i.wealth_qui i.birth_order mother_age"	
 
 * baseline vars are BL`var'
-foreach num in 1 2 4 5 7{
+foreach num in 1 2 4 5 6 7{
 	foreach var of varlist ${fam`num'} {
 		g d`var'=L2.`var' if year==2016
 		*replace d`var'=L.`var' if year==2015
@@ -284,6 +284,7 @@ foreach num in 1 2 4 5 7{
 	
 	
 	use "${All_create}ITT_table2.dta", clear
+	
 	
 
 
@@ -321,7 +322,7 @@ estimates clear
 foreach var of varlist ${fam`num'} {
 		
 		*1 COVARIATE - Adjusted with controls;
-		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
+		eststo `var'_covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
 		qui sum `var' if year==2016 & treatment==0, de
 		estadd scalar mean = r(mean) 
 		estadd scalar sd = r(sd)
@@ -403,7 +404,7 @@ foreach num of numlist 2 3 4 6 {
 estimates clear 
 foreach var of varlist ${fam`num'} {
 		*1 COVARIATE - Adjusted with controls;
-		eststo `var'_Add_Covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
+		eststo `var'_covar: reg `var' i.treatment male infant_age_months i.region $controls if year==2016,  robust cl(grappe) 
 		qui sum `var' if year==2016 & treatment==0, de
 		estadd scalar mean = r(mean) 
 		estadd scalar sd = r(sd)
@@ -456,3 +457,19 @@ estimates clear
 /*
 second half of table, hygiene_score knowledge_score mddw_score foodSecurityIHS 
 see basic TII female_v6
+*/
+
+*=================================
+*    Additional regressions
+*=================================
+
+
+foreach var of varlist $fam5 {
+	eststo `var'_pca: regr `var' home_score_FCI_pca male infant_age_months i.region $controls if year==2016, robust cl(grappe)
+	eststo `var'_pca_nocon: regr `var' home_score_FCI_pca if year==2016, robust cl(grappe)
+	eststo `var'_sum:regr `var' home_score_FCI_sum male infant_age_months i.region $controls if year==2016, robust cl(grappe)
+	eststo `var'_sum_nocon: regr `var' home_score_FCI_sum if year==2016, robust cl(grappe)
+	}
+	estout using "${TABLES}ASQ_homescore.txt", replace keep(home_score_FCI_pca home_score_FCI_sum) ///
+		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
+	

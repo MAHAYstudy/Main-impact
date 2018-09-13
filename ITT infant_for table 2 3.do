@@ -242,17 +242,18 @@ global fam3 "morb_2days morb_3days morb_7days"
 	label var morb_7days "Morbidity, Past 7 days" // value 0-8
 	
 *Fam 4 Variables: Home learning environment
-global fam4 "learningop playobj totbook home_score2 role_health role_teach depend_health depend_intel ladder_health ladder_intel"
+global fam4 "learningop playobj totbook role_health role_teach depend_health depend_intel ladder_health ladder_intel"
 	label var learningop "Num of Activity w/Adult"
 	label var playobj "Play objects"
 	label var totbook "Book Reading"
-	label var home_score2 "Home Play"
 	label var role_health "Role: Healthy?"
 	label var role_teach "Role: Teach?"
 	label var depend_health "Affect Health?"
 	label var depend_intel "Affect Intel?"
 	label var ladder_health "Health Status"
 	label var ladder_intel "Intel Status"
+	
+	
 *Fam 6 : For table 3 , second half 
 global fam6 "home_score2 home_score_FCI_sum home_score_FCI_pca"
 		
@@ -467,9 +468,12 @@ see basic TII female_v6
 foreach var of varlist $fam5 {
 	eststo `var'_pca: regr `var' home_score_FCI_pca male infant_age_months i.region $controls if year==2016, robust cl(grappe)
 	eststo `var'_pca_nocon: regr `var' home_score_FCI_pca if year==2016, robust cl(grappe)
-	eststo `var'_sum:regr `var' home_score_FCI_sum male infant_age_months i.region $controls if year==2016, robust cl(grappe)
-	eststo `var'_sum_nocon: regr `var' home_score_FCI_sum if year==2016, robust cl(grappe)
+	predict asq_`var'
+	twoway (scatter `var' home_score_FCI_pca) (line asq_`var' home_score_FCI_pca)
+	graph save "${GRAPHS}`var'_homescore", replace
+	drop asq_`var'
 	}
-	estout using "${TABLES}ASQ_homescore.txt", replace keep(home_score_FCI_pca home_score_FCI_sum) ///
+	estout using "${TABLES}ASQ_homescore.txt", replace keep(home_score_FCI_pca) ///
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par))	
+	est clear
 	

@@ -203,7 +203,7 @@ global fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted wasting sevwasting"
 
 	
 *Fam 2: Intermediate indicators
-global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score_FCI_pca bd_timesate24hr"
+global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h bd_timesate24hr"
 
 	lab var dairy_24h "dairy, past 24h" // binary
 	lab var meat_egg_24h "proteins, past 24h" // binary
@@ -212,7 +212,7 @@ global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score_FCI_pca bd_ti
 	label var home_score_FCI_pca "Home Play"
 	
 *Fam 3: child development indicators
-global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all_sr"
+global fam3 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr"
 
 	label var asq_gross_sr "Gross Motor"
 	label var asq_fine_sr "Fine Motor"
@@ -256,7 +256,7 @@ di "now start itt"
 keep if year == 2016
 
 
-* COVARIATE TABLE (stratified)
+* COVARIATE TABLE 
 
 *age and child characteristics
 cap erase "${TABLES}graph3age.xml"
@@ -267,7 +267,8 @@ foreach var of varlist $fam1 $fam3{
 		lincom `num'.treatment 
 			outreg2 using "${TABLES}graph3age", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+	alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -281,7 +282,8 @@ foreach var of varlist $fam1 $fam3 {
 		lincom `num'.treatment 
 			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_originalcohort", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -295,7 +297,8 @@ foreach var of varlist $fam1 $fam3 {
 		lincom `num'.treatment 
 			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_child_BLadj", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -310,7 +313,8 @@ foreach var of varlist $fam2 $fam6 {
 		lincom `num'.treatment 
 			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + 1.treatment#1.ageold
-			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3age_hh", keep(i.treatment##ageold) nocons excel addt(outcome, `var', treatment, `num') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -320,11 +324,12 @@ cap erase "${TABLES}graph3momed_child.xml"
 cap erase "${TABLES}graph3momed_child.txt"
 foreach num of numlist 1/4 {
 foreach var of varlist $fam1 $fam3 {
-	reg `var' i.treatment##mother_ed male infant_age_months i.region  $controls ,  robust cl(grappe)
+	reg `var' i.treatment##edhigh male infant_age_months i.region  $controls ,  robust cl(grappe) 
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom `num'.treatment + `num'.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.edhigh
+			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -335,11 +340,12 @@ cap erase "${TABLES}graph3momed_hh.xml"
 cap erase "${TABLES}graph3momed_hh.txt"
 foreach num of numlist 1/4 {
 foreach var of varlist $fam2 $fam6 {
-	reg `var' i.treatment##mother_ed male infant_age_months i.region $controls ,  robust cl(grappe)
+	reg `var' i.treatment##edhigh male infant_age_months i.region $controls ,  robust cl(grappe)
 		lincom `num'.treatment
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
-		lincom `num'.treatment + `num'.treatment#1.mother_ed
-			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##mother_ed) nocons excel adds(high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 0, high, r(ub),low, r(lb),close, r(estimate))
+		lincom `num'.treatment + `num'.treatment#1.edhigh
+			outreg2 using "${TABLES}graph3momed_hh", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
+			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)
 	est clear
 }
 }
@@ -357,20 +363,105 @@ foreach var of varlist $fam2 $fam6 {
 
 	
 *Home Environment
-cap erase "${TABLES}homescore_treatment.xml"
-cap erase "${TABLES}homescore_treatment.txt"
-foreach var of varlist $fam2 $fam3 {
-	reg `var' i.treatment##c.home_score_FCI_pca male infant_age_months i.region $controls ,  robust cl(grappe)
-	outreg2 using "${TABLES}homescore_treatment", keep(treatment#c.home_score_FCI_pca) nocons excel ///
+cap erase "${TABLES}homescore_age.xml"
+cap erase "${TABLES}homescore_age.txt"
+foreach var of varlist $fam1 $fam2 $fam3 asq_all_sr {
+	reg `var' c.home_score_FCI_pca##ageold  male infant_age_months i.region $controls ,  robust cl(grappe)
+	lincom  c.home_score_FCI_pca
+			outreg2 using "${TABLES}homescore_age", keep(c.home_score_FCI_pca##ageold) nocons excel addt(outcome, `var') adds(age, 0, high, r(ub),low, r(lb),close, r(estimate))
+	lincom  c.home_score_FCI_pca +  c.home_score_FCI_pca#1.ageold
+			outreg2 using "${TABLES}homescore_age", keep(c.home_score_FCI_pca##ageold) nocons excel addt(outcome, `var') adds(age, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
 	alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †) ///
 					 title("homescore heterogeneity")
 					 est clear
 }
 
+import excel "${TABLES}Home score/homescore_age_modified.xlsx", sheet("export") firstrow case(lower) clear
+save "${GRAPHS}/Main-impact-paper/homescore_age.dta", replace
 
+use "${GRAPHS}/Main-impact-paper/homescore_age.dta" , clear
 
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "asq_all_sr"
+	replace outcome = "5" if outcome == "stunted"
+	replace outcome = "6" if outcome == "sevstunted"
+	replace outcome = "7" if outcome == "wasting"
+	replace outcome = "8" if outcome == "sevwasting"
+	replace outcome = "9" if outcome == "meat_egg_24h"
+	replace outcome = "10" if outcome == "vitA_24h"
+	replace outcome = "11" if outcome == "divers_24h"
+	replace outcome = "12" if outcome == "bd_timesate24hr"
+	replace outcome = "13" if outcome == "asq_gross_sr"
+	replace outcome = "14" if outcome == "asq_fine_sr"
+	replace outcome = "15" if outcome == "asq_pres_sr"
+	replace outcome = "16" if outcome == "asq_soc_sr"
+	replace outcome = "17" if outcome == "asq_comm_sr"
+	replace outcome = "18" if outcome == "dairy_24h"
 	
-
+	
+	destring outcome age high low close, replace
+	
+	label define age 0 "young" 1 "old"
+	label value age age
+	
+	*generate variable for graphing
+	sort age
+	bys outcome: egen treat_het = rank(age)
+	
+	sort outcome treat_het
+	
+	
+	*Looping for age het graph
+	foreach num of numlist 1/18 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Severely Stunted"
+	local tname7 "Wasting"
+	local tname8 "Severely Wasting"
+	local tname9 "Protein intake past 24hr"
+	local tname10 "Vitamin A rich foods past 24hr"
+	local tname11 "Dietary diversity score past 24 hr"
+	local tname12 "Meal frequency past 24hr"
+	local tname13 "ASQ gross motor"
+	local tname14 "ASQ fine motor"
+	local tname15 "asq_pres_sr"
+	local tname16 "asq_soc_sr"
+	local tname17 "asq_comm_sr"
+	local tname18 "dairy_24h"
+	local fname1 home_hfaz_age
+	local fname2 home_wfaz_age
+	local fname3 home_wflz_age
+	local fname4 home_tasq_age
+	local fname5 home_stun_age
+	local fname6 home_sevstun_age
+	local fname7 home_wasting_age
+	local fname8 home_sevwastnig_age
+	local fname9 home_meat_egg_age
+	local fname10 home_vitA_age
+	local fname11 home_divers_age
+	local fname12 home_bd_timesate_age
+	local fname13 home_asq_gross_age
+	local fname14 home_asq_fine_age
+	local fname15 home_asq_pres_age
+	local fname16 home_asq_soc_age
+	local fname17 home_asq_comm_age
+	local fname18 home_dairy_age
+	
+	
+	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
+			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
+		   rcap high low treat_het if age ==1,lcolor(gs6) yline(0, lstyle(foreground)) || ///
+			scatter close treat_het if age ==1, mlabel(age)  mlabc(gs6) mlabp(5) m(S) mc(gs6) /// 
+			ytitle("β Coef.") xlabel(1 "Young" 2 "Old") xsc(r(0 3)) ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over child age") legend(off)  ///
+			note("Black denotes child age < median, gray denotes child age >= median")  || if outcome == `num'
+		graph save "${GRAPHS}HOME/`fname`num''", replace
+		}
 	
 	
 	
@@ -624,14 +715,15 @@ use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
 	replace outcome = "2" if outcome == "meat_egg_24h"
 	replace outcome = "3" if outcome == "vitA_24h"
 	replace outcome = "4" if outcome == "divers_24h"
-	replace outcome = "5" if outcome == "home_score2"
-	replace outcome = "6" if outcome == "bd_timesate24hr"
+	replace outcome = "5" if outcome == "bd_timesate24hr"
+	replace outcome = "6" if outcome == "home_score2"
+	replace outcome = "7" if outcome == "home_score_FCI_sum"
+	replace outcome = "8" if outcome == "home_score_FCI_pca"
 	
 	destring outcome treatment age high low close, replace
 	
 	label define outcome 1 "Dairy intake past 24hr" 2 "Protein intake past 24hr" ///
-		3 "Vitamin A rich foods past 24hr" 4 "Dietary diversity score past 24 hr" ///
-		5 "HOME score"
+		3 "Vitamin A rich foods past 24hr" 4 "Dietary diversity score past 24 hr" 
 	label value outcome outcome
 	
 
@@ -656,19 +748,23 @@ use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
 	
 	
 	*Looping for age het graph
-	foreach num of numlist 1/6 {
+	foreach num of numlist 1/8 {
 	local tname1 "Dairy intake past 24hr"
 	local tname2 "Protein intake past 24hr"
 	local tname3 "Vitamin A rich foods past 24hr"
 	local tname4 "Dietary diversity score past 24 hr"
-	local tname5 "HOME score"
-	local tname6 "Meal frequency past 24hr"
+	local tname5 "Meal frequency past 24hr"
+	local tname6 "home score 2"
+	local tname7 "Home score sum"
+	local tname8 "Home score pca"
 	local fname1 het_dairy_24h_age
 	local fname2 het_meat_egg_24h_age
 	local fname3 het_vitA_24h_age
 	local fname4 het_divers_24h_age
-	local fname5 het_home_score_age
-	local fname6 het_mealfrquency_age
+	local fname5 het_mealfrquency_age
+	local fname6 het_homescore_age
+	local fname7 het_homescore_sum_age
+	local fname8 het_homescore_pca_age
 	
 	twoway rcap high low treat_het if age ==0, lcolor(gs2) || ///
 			scatter close treat_het if age ==0, mlabel(age)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
@@ -687,6 +783,7 @@ use "${GRAPHS}/Main-impact-paper/graph3_age_hh.dta" , clear
 	************************************************************	
 	*For mother education het graph with infant characteristics*
 	************************************************************
+	*fam1 "hfaz wfaz wflz asq_all_sr stunted sevstunted wasting sevwasting"
 	
 import excel "${TABLES}graph3momed_child_modified.xlsx", sheet("export") firstrow case(lower) clear
 	
@@ -694,7 +791,17 @@ save "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta" , clear
 
-	destring outcome treatment mom_ed high low close, replace
+	
+	replace outcome = "1" if outcome == "hfaz"
+	replace outcome = "2" if outcome == "wfaz"
+	replace outcome = "3" if outcome == "wflz"
+	replace outcome = "4" if outcome == "asq_all_sr"
+	replace outcome = "5" if outcome == "stunted"
+	replace outcome = "6" if outcome == "wasting"
+	replace outcome = "9" if outcome != "1" & outcome != "2" & outcome != "3" & outcome != "4" ///
+		& outcome != "5" & outcome != "6"
+
+		destring outcome treatment mom_ed high low close, replace
 	
 	label define outcome 1 "Height for age Z score" 2 "Weight for age Z score" ///
 		3 "Weight for length Z score" 4 "Total ASQ"
@@ -720,15 +827,19 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta" , clear
 	sort outcome treat_het
 	
 	
-	foreach num in 1 2 3 4 {
+	foreach num of numlist 1/6 {
 	local tname1 "Height for age z-score"
 	local tname2 "Weight for age z-score"
 	local tname3 "Weight for length z-score"
 	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Wasted"
 	local fname1 het_hfaz_momed
 	local fname2 het_wfaz_momed
 	local fname3 het_wflz_momed
 	local fname4 het_tasq_momed
+	local fname5 het_stunted_momed
+	local fname6 het_wasted_momed
 	
 	twoway rcap high low treat_het if mom_ed ==0, lcolor(gs2) || ///
 			scatter close treat_het if mom_ed ==0, mlabel(mom_ed)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
@@ -738,8 +849,8 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta" , clear
 			xtitle("Treatment group", margin(small) ) ///
 			ytitle("β Coef.") ///
 			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over mother education level") legend(off)  ///
-			note("Black denotes mother has only primary education or less, gray denotes mother has at least secondary education", size(vsmall))  || if outcome == `num'
-											
+			note("Black denotes mother has only primary education or less, gray denotes mother has at least secondary education", size(vsmall))  || ///
+			if outcome == `num'								
 		graph save "${GRAPHS}Main-impact-paper/`fname`num''", replace
 		}
 		
@@ -755,13 +866,22 @@ save "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta", replace
 
 use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 
+	replace outcome = "1" if outcome == "dairy_24h"
+	replace outcome = "2" if outcome == "meat_egg_24h"
+	replace outcome = "3" if outcome == "vitA_24h"
+	replace outcome = "4" if outcome == "divers_24h"
+	replace outcome = "5" if outcome == "bd_timesate24hr"
+	replace outcome = "6" if outcome == "home_score2"
+	replace outcome = "7" if outcome == "home_score_FCI_sum"
+	replace outcome = "8" if outcome == "home_score_FCI_pca"
+
 	destring outcome treatment mom_ed high low close, replace
 	
 	*fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h home_score2"
 	
 	label define outcome 1 "Dairy intake past 24hr" 2 "Protein intake past 24hr" ///
-		3 "Vitamin A rich foods past 24hr" 4 "Dietary diversity score past 24 hr" ///
-		5 "HOME score"
+		3 "Vitamin A rich foods past 24hr" 4 "Dietary diversity score past 24 hr" 
+
 	label value outcome outcome
 
 	label define treatment 1 "T1" 2 "T2" ///
@@ -786,23 +906,29 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 	
 		
 	*Looping for mother education het graph with infant characteristics
-	foreach num in 1 2 3 4 5{
+	foreach num of numlist 1/8 {
 	local tname1 "Dairy intake past 24hr"
 	local tname2 "Protein intake past 24hr"
 	local tname3 "Vitamin A rich foods past 24hr"
 	local tname4 "Dietary diversity score past 24 hr"
-	local tname5 "HOME score"
+	local tname5 "Meal frequency past 24hr"
+	local tname6 "home score 2"
+	local tname7 "Home score sum"
+	local tname8 "Home score pca"
 	local fname1 het_dairy_24h_momed
 	local fname2 het_meat_egg_24h_momed
 	local fname3 het_vitA_24h_momed
 	local fname4 het_divers_24h_momed
-	local fname5 het_home_score_momed
+	local fname5 het_mealfrquency_momed
+	local fname6 het_homescore_momed
+	local fname7 het_homescore_sum_momed
+	local fname8 het_homescore_pca_momed
 	
 	twoway rcap high low treat_het if mom_ed ==0, lcolor(gs2) || ///
 			scatter close treat_het if mom_ed ==0, mlabel(mom_ed)  mlabc(gs1)  mlabp(1) m(D) mc(gs1)|| ///
 		   rcap high low treat_het if mom_ed ==1,lcolor(gs6) yline(0, lstyle(foreground)) || ///
 			scatter close treat_het if mom_ed ==1, mlabel(mom_ed)  mlabc(gs6) mlabp(5) m(S) mc(gs6) /// 
-			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) ///
+			xlabel(1.5 "T1" 4 "T2" 6.5 "T3" 9 "T4") xsc(r(0 10.5)) ///
 			xtitle("Treatment group", margin(small) ) ///
 			ytitle("β Coef.") ///
 			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity over mother education level") legend(off)  ///

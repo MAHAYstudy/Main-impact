@@ -326,7 +326,8 @@ foreach num of numlist 1/4 {
 foreach var of varlist $fam1 $fam3 {
 	reg `var' i.treatment##edhigh male infant_age_months i.region  $controls ,  robust cl(grappe) 
 		lincom `num'.treatment 
-			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 0, high, r(ub),low, r(lb),close, r(estimate))
+			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##edhigh) nocons excel ///
+			addt(outcome, `var', treatment, `num') adds(mom_ed, 0, high, r(ub),low, r(lb),close, r(estimate))
 		lincom `num'.treatment + `num'.treatment#1.edhigh
 			outreg2 using "${TABLES}graph3momed_child", keep(i.treatment##edhigh) nocons excel addt(outcome, `var', treatment, `num') adds(mom_ed, 1, high, r(ub),low, r(lb),close, r(estimate)) ///
 			alpha(0.001, 0.01, 0.05, 0.15) symbol(***, **, *, †)

@@ -1,12 +1,13 @@
 # Main-impact
 
+## Heterogeneity analysis
 
-ITT-infant: Ling's working branch
+### Tables
+- in /Madagascar Mahay Data/analysis/tables/Main impact heterogeneity
 
+### Graphs
 
-
-
-### Figure 3 : [heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity.do](https://github.com/MAHAYstudy/Main-impact/blob/basic-ITT-infant/heterogeneity%20graph%20(Figure%203)/Graph3-ITT%20infant%20heterogeneity.do)
+#### Figure 3 : [heterogeneity graph (Figure 3)/Graph3-ITT infant heterogeneity.do](https://github.com/MAHAYstudy/Main-impact/blob/basic-ITT-infant/heterogeneity%20graph%20(Figure%203)/Graph3-ITT%20infant%20heterogeneity.do)
 
 - graph files in Madagascar Mahay Data/analysis/graphs/Main-impact-paper/
 - file name starts with het_
@@ -15,7 +16,7 @@ ITT-infant: Ling's working branch
 - [x] Heterogeneity by maternal ed for each arm and multiple outcomes: Dairy, Meat & eggs, vitamin A foods, diet diversity, HOME
 
 
-### New figures
+#### New figures
 - [x] developmental outcomes and main effects over treatment arms (6 figures)
 
   1. data in ITT graph.do
@@ -23,7 +24,7 @@ ITT-infant: Ling's working branch
 - [x] growth outcomes over 3 age cohorts (ML and EL)
 
 
-### All growth graphs: [Madagascar Mahay Data/analysis/graphs/Main-impact-paper/All growth graphs.pdf](https://www.dropbox.com/s/013zh3p2es5e46e/All%20growth%20graphs.pdf?dl=0)
+#### All growth graphs: [Madagascar Mahay Data/analysis/graphs/Main-impact-paper/All growth graphs.pdf](https://www.dropbox.com/s/013zh3p2es5e46e/All%20growth%20graphs.pdf?dl=0)
 - Total endline samples, median split by age
 - Without replacements and youngest cohort, median split by age
 - Without replacements and youngest cohort, controlling for baseline data, median split by age
@@ -32,6 +33,8 @@ ITT-infant: Ling's working branch
 05/16: 
 fixed codes on maternal educ missing values, updated dataset(female & infant)
 update table 2 & 3
+
+## ITT tables
 
 ### Table 1 & S1 : using Table1_balance.do (done)
 - [x] redo 1 & S1 using iebaltab

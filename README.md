@@ -50,6 +50,17 @@ update table 2 & 3
 
 #### Next: ACN
 
+## 10/1 
+### ML analysis
+- Dofile: ITT ML.do
+- tables: in analysis/tables/ITT_ML
+### hygiene_score, knowledge_score
+- hygiene_score: created in BL_create, ML_create, EL_create folders
+  - did not change the original score
+  - new score variable: hygiene_score_pca, might be a better indicator
+- knowledge_score: created in BL_create, ML_create, EL_create folders
+  - checked, no change needed
+
 
 ## Notes for analysis use
 

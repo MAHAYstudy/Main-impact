@@ -144,7 +144,7 @@ global d=8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -262,7 +262,7 @@ Play objects and materials†
 Family care indicators (FCI) score †
 Child food diversity score: 24-hour recall †
 */
-global Fvars knowledge_score mddw_score learningop totbook playobj home_score2 divers_24h
+global Fvars knowledge_score mddw_score learningop totbook playobj home_score_FCI_pca divers_24h
 
 /* Saving control variables for balance [update with final list of controls dec 2017)
 
@@ -276,7 +276,6 @@ global mage_controls 	"male i.mother_educ i.wealth_qui i.birth_order"
 drop fpc01-a204
 drop fb02fenc-fd16c_s
 drop fpg_demo99-fpc_rawtot
-drop clonefpc01-clonefpc_1pl_sresid
 drop fpc19_rc-fps37_rc
 drop fl09a_0-fd28a_5
 drop fpc19b-q1_5
@@ -298,8 +297,6 @@ preserve
 	** ------- BALANCE TABLE 1: FULL SAMPLE AT BASELINE ------------- **
 summ $HHvars if treatment == 0, de
 summ $Cvars $Fvars if treatment == 0 & target != 1, de
-
-
 
 
 * the F TEST REQUIRES TO TACKLE THE MISSING VARIABLES (ft) BLOCKED OUT FOR THE MOMENT BEING 
@@ -333,8 +330,6 @@ summ $HHvars birth_order if treatment == 0, de
 		    covariates(impute_male impute_infant_age) vce(cluster grappe) feqtest pftest form(%9.3fc) replace rowvarlabel
 
 
-	
-	--------
 	
 /*
 	

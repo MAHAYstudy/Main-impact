@@ -148,9 +148,7 @@ tabstat infant_age_months if year==2016 & targeted!=0, by(target) s(min p10 p50 
 ta infant_age_months if year==2016 & targeted!=0
 
 
-*******************************************************************************
-* GLOBAL LIST OF FAMILY OF OUTCOMES;
-*******************************************************************************;
+
 
  recode bf_bfstart 8=. 9=.
  recode bf_colust  9=.
@@ -220,7 +218,7 @@ global fam5 "asq_gross_sr asq_fine_sr asq_pres_sr asq_soc_sr asq_comm_sr asq_all
 	
 *intermediate indicators: Fam 2 3 4
 *Fam 2 Variables: breastefeeding, appetite and food diversity
-global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h divers_gt4"
+global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h divers_gt4 bd_timesate24hr"
 	lab var br_size "birth size"
 	lab var bf_still "still breastfeeding"
 	lab var bf_1sthr "breatfed during first hour"
@@ -231,7 +229,7 @@ global fam2 "dairy_24h meat_egg_24h vitA_24h divers_24h divers_gt4"
 	lab var meat_egg_24h "proteins, past 24h" // binary
 	lab var vitA_24h "vit A, past 24h" // binary
 	lab var divers_24h "food diversity, past 24h" //categories 0-6
-	lab var bd_timesate "meal frequency, past 24h" 
+	lab var bd_timesate24hr "meal frequency, past 24h" 
 	* divers_gt4 // binary
 	* divers_gt4 Child 6-12 mo received foods from 4 or more food groups in past 24hr
 
@@ -427,7 +425,7 @@ foreach var of varlist ${fam`num'} {
 		cells(b(star fmt(3) label(Coef.)) ci(fmt(3) label(CI) par)) 
 		}
 		
-foreach var of varlist dairy_24h meat_egg_24h vitA_24h divers_gt4 {
+foreach var of varlist dairy_24h meat_egg_24h vitA_24h divers_gt4 bd_timesate24hr {
 		tab `var' if year==2016 & treatment==0
 		}
 
@@ -464,6 +462,7 @@ see basic TII female_v6
 *    Additional regressions
 *=================================
 
+*Regression: relationship between ASQ and home score
 
 foreach var of varlist $fam5 {
 	eststo `var'_pca: regr `var' home_score_FCI_pca male infant_age_months i.region $controls if year==2016, robust cl(grappe)

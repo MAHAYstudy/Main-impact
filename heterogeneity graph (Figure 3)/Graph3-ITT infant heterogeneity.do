@@ -542,7 +542,40 @@ use "${GRAPHS}/Main-impact-paper/graph3_age.dta" , clear
 											
 		graph save "${GRAPHS}Main-impact-paper/`fname`num''", replace
 		}
+		
+	*Looping for age het graph - colored
+	foreach num of numlist 1/8 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Severely Stunted"
+	local tname7 "Wasting"
+	local tname8 "Severely Wasting"
+	local fname1 het_hfaz_age
+	local fname2 het_wfaz_age
+	local fname3 het_wflz_age
+	local fname4 het_tasq_age
+	local fname5 het_stun_age
+	local fname6 het_sevstun_age
+	local fname7 het_wasting_age
+	local fname8 het_sevwastnig_age
 	
+	twoway rcap high low treat_het if treatment == 1 , lwidth(thick) lcolor("254 226 135") yline(0, lstyle(foreground)) || ///
+			rcap high low treat_het if treatment == 2 ,lwidth(thick) lcolor("240 161 112")  || ///
+			rcap high low treat_het if treatment == 3 ,lwidth(thick) lcolor("179 140 118")  || ///
+			rcap high low treat_het if treatment == 4 ,lwidth(thick) lcolor("96 161 55")  ///	
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) || ///
+			scatter close treat_het , mlabel(age)  mlabc(gs4) mlabp(1) m(D) mc(gs4) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) ///
+			legend(off) ///
+			graphr(c(white)) ||  if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
+		}
 	
 	
 	************************************************************	
@@ -857,6 +890,37 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_child_modified.dta" , clear
 		
 		
 		
+	*Colored graphs - Mom ed & child characteristics
+	foreach num of numlist 1/6 {
+	local tname1 "Height for age z-score"
+	local tname2 "Weight for age z-score"
+	local tname3 "Weight for length z-score"
+	local tname4 "Total ASQ"
+	local tname5 "Stunted"
+	local tname6 "Wasted"
+	local fname1 het_hfaz_momed
+	local fname2 het_wfaz_momed
+	local fname3 het_wflz_momed
+	local fname4 het_tasq_momed
+	local fname5 het_stunted_momed
+	local fname6 het_wasted_momed
+	
+	twoway rcap high low treat_het if treatment == 1 , lwidth(thick) lcolor("254 226 135") yline(0, lstyle(foreground)) || ///
+			rcap high low treat_het if treatment == 2 ,lwidth(thick) lcolor("240 161 112")  || ///
+			rcap high low treat_het if treatment == 3 ,lwidth(thick) lcolor("179 140 118")  || ///
+			rcap high low treat_het if treatment == 4 ,lwidth(thick) lcolor("96 161 55")  ///	
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) || ///
+			scatter close treat_het , mlabel(mom_ed)  mlabc(gs4) mlabp(1) m(D) mc(gs4) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity by mother's education level") ///
+			legend(off) ///
+			graphr(c(white)) ||  if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
+		}
+	
+		
 	***************************************************************	
 	*For mother education het graph with household characteristics*
 	************************************************************
@@ -906,7 +970,7 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 	
 	
 		
-	*Looping for mother education het graph with infant characteristics
+	*Looping for mother education het graph with household characteristics
 	foreach num of numlist 1/8 {
 	local tname1 "Dairy intake past 24hr"
 	local tname2 "Protein intake past 24hr"
@@ -939,251 +1003,89 @@ use "${GRAPHS}/Main-impact-paper/graph3momed_hh_modified.dta" , clear
 		}
 		
 		
-
-
-*** ----------------------------------- RUNNING SPECIFICATION WITH COVARIATES ----------------------------------- **;
-*INCLUDES figures code: kdensity for subgroup male only;
-* GRAPHS: must run 1x without replace option on name(`var'`x',replace) then add back in;
-* temp do fam 1 outcomes only;
-/* forval num=1/5;
-
-
-forval num=1/5 {;
-
-display "*------------------------family of outcomes `num'---------------------------------";
-		
-set more off;
-    *2. loop over variables within each family;
-	foreach var of varlist ${fam`num'}  {;
-	* to test with a couple vars;
-	*foreach var of varlist hfaz wfaz wflz  {;
+	*Colored graphs - Mom ed & HH characteristics
+	foreach num of numlist 1/8 {
+	local tname1 "Dairy intake past 24hr"
+	local tname2 "Protein intake past 24hr"
+	local tname3 "Vitamin A rich foods past 24hr"
+	local tname4 "Dietary diversity score past 24 hr"
+	local tname5 "Meal frequency past 24hr"
+	local tname6 "home score 2"
+	local tname7 "Home score sum"
+	local tname8 "Home score pca"
+	local fname1 het_dairy_24h_momed
+	local fname2 het_meat_egg_24h_momed
+	local fname3 het_vitA_24h_momed
+	local fname4 het_divers_24h_momed
+	local fname5 het_mealfrquency_momed
+	local fname6 het_homescore_momed
+	local fname7 het_homescore_sum_momed
+	local fname8 het_homescore_pca_momed
 	
-		*3. loop over heterogeneity/subgroups;
-
-		* Change on May 27: replace ymo with teen mom;
-		* change on May 28: replaced teen with Eteen (at baseline);
-		* change Nov: recoded region to hautep (binary);
-		* foreach sub in edlow wlow agey male stunt nosw ymo fborn deprd {;
-		* re-ordered;
+	twoway rcap high low treat_het if treatment == 1 , lwidth(thick) lcolor("254 226 135") yline(0, lstyle(foreground)) || ///
+			rcap high low treat_het if treatment == 2 ,lwidth(thick) lcolor("240 161 112")  || ///
+			rcap high low treat_het if treatment == 3 ,lwidth(thick) lcolor("179 140 118")  || ///
+			rcap high low treat_het if treatment == 4 ,lwidth(thick) lcolor("96 161 55")  ///	
+			xlabel(1.5 "T1" 4"T2" 6.5 "T3" 9"T4") xsc(r(0 10.5)) || ///
+			scatter close treat_het , mlabel(mom_ed)  mlabc(gs4) msize(small) mlabp(1) m(D) mc(gs4) ///
+			xtitle("Treatment group", margin(small) ) ///
+			ytitle("β Coef.") ///
+			title(`tname`num'', margin(b+2.5)) subtitle("heterogeneity by mother's education level") ///
+			legend(off) ///
+			graphr(c(white)) name(`fname`num'',replace) ||  if outcome == `num'
+											
+		graph save "${GRAPHS}Main-impact-paper/ITT_graphs/`fname`num''", replace
+		}
 		
-		foreach sub in male {;
-			reg `var' treatment##`sub' male infant_age_months i.region $controls,  robust cl(grappe); 	
-	
-			
-			foreach x in 1 2 3 4{;
-			twoway (kdensity `var' if male==0 & treatment==`x', lcolor(pink)) (kdensity `var' if male==1 & treatment==`x', lcolor(midblue)), name(`var'`x',replace) title("kernal density `var' treatment `x'", size(small)) legend(label(1 "female") label(2 "male")) ytitle("kdensity", size(small)) xtitle("`var'", size(small));
-			};
-			
-			graph combine `var'1 `var'2 `var'3 `var'4, ycom xcom imargin (0 0 0 0) name(`var'_kdensity, replace) saving("${GRAPHS}`var'_kdensity.gph",replace);
-					
-			
-				foreach x in 1 2 3 4 {;
-				* loop over treatment to get the test of the difference across high and low;				
-				lincom ((`x'.treatment#1.`sub' - 0.treatment#1.`sub') -(`x'.treatment#0.`sub' - 0.treatment#0.`sub'));
-				scalar diff`x'_`sub'=r(estimate);
-				disp diff`x'_`sub';
-				test (`x'.treatment#1.`sub' - 0.treatment#1.`sub') =(`x'.treatment#0.`sub' - 0.treatment#0.`sub');
-				scalar p`x'_`sub'=r(p);
-				};
-				
-			
-			*margins r.treatment, over(`sub') contrast post;
-			
-
-			* Modification June 23: saving as text file, easier import to excel .xlsx file;
-			* Modification June 24: Adding in sample endline average;
-			* Modification Sep 5: Adding in joint f-test and equality of treatment test;
-			*outreg2 using "${TABLES}fam_`num'_inter_controls", se ctitle(`var'_`sub') bdec(3) sdec(3)
-			*addstat(T1 difference, diff1_`sub', T1 pvalue, p1_`sub', T2 difference, diff2_`sub', T2 pvalue, p2_`sub',
-			*T3 difference, diff3_`sub', T3 pvalue, p3_`sub', T4 difference, diff4_`sub', T4 pvalue, p4_`sub', 
-			*Joint ftest, ftest, Equality test, eqtest);
-			*added
-			/*title("Table `num'.  Heteregeneity Effects infant outcomes, basic", @title)
-			collabels(, none) mlabels(, dep) 
-			posthead("")  varwidth(30) modelwidth(10)
-			cells(b(star fmt(3)) se(par)) starlevels(* 0.10 ** 0.05 *** 0.001) 
-			scalars(mean_y sd_y prog p_eq) r2 legend obslast 		
-			addnote("All regressions control for gender/age in months and strata dummies. Standard errors clustered at the 	village level.") ; */
-		estimates clear;
-		};
-		*end loop 3 heterogeneity sub;
-	}; 
-	*end loop 2 var of varlist fam`num';	
-}; 
-*end loop num 1;
-*/;	
-
-forval num=1/5 {;
-
-display "*------------------------family of outcomes `num'---------------------------------";
-		
-set more off;
-    *2. loop over variables within each family;
-	foreach var of varlist ${fam`num'}  {;
-	* to test with a couple vars;
-	*foreach var of varlist hfaz wfaz wflz  {;
-	
-		*3. loop over heterogeneity/subgroups;
+	global momed_hh het_divers_24h_momed het_vitA_24h_momed /// 
+					het_dairy_24h_momed het_meat_egg_24h_momed ///
+					het_homescore_pca_momed 
 
 		
-		foreach sub in agey {;
-			reg `var' treatment##`sub' male infant_age_months i.region $controls,  robust cl(grappe); 	
-	
-			
-			/*foreach x in 1 2 3 4{;
-			twoway (lowess `var' infant_age_months if agey==0 & treatment==`x', lcolor(green)) (lowess `var' infant_age_months if agey==1 & treatment==`x', lcolor(purple)), name(`var'`x',replace) title("lowess `var' treatment `x'", size(small)) legend(label(1 "age > median") label(2 "age < median")) ytitle("`var'", size(small)) xtitle("age in months", size(small));
-			};
-			
-			graph combine `var'1 `var'2 `var'3 `var'4, ycom xcom imargin (0 0 0 0) name(`var'_lowess, replace) saving("${GRAPHS}`var'_lowess.gph",replace);
-			*/;		
-			
-				foreach x in 1 2 3 4 {;
-				* loop over treatment to get the test of the difference across high and low;				
-				lincom ((`x'.treatment#1.`sub' - 0.treatment#1.`sub') -(`x'.treatment#0.`sub' - 0.treatment#0.`sub'));
-				scalar diff`x'_`sub'=r(estimate);
-				disp diff`x'_`sub';
-				test (`x'.treatment#1.`sub' - 0.treatment#1.`sub') =(`x'.treatment#0.`sub' - 0.treatment#0.`sub');
-				scalar p`x'_`sub'=r(p);
-				};
-				
-			
-			*margins r.treatment, over(`sub') contrast post;
-			
-			*bayley;
-	 /*twoway kdensity bayley_score_sresid  if year==2016 & treatment==4 & pr_admin==1 ||  
-			kdensity bayley_score_sresid  if year==2016 & treatment==4 & pr_admin==0 ||  
-			kdensity bayley_score_sresid  if year==2016 & treatment!=4 & bayley_score_sresid>-3,
-	   
-	   legend(label(1 "T4 participants") label(2 "T4 nonparticipants") label(3 "T0-T2-T3") )
-	   ytitle("Bayley score std residual",size(mediumsmall)) 
-	   title("kernel density bayley score, subsample", size(medium))   
-	   saving("${GRAPHS}bayley_2016_subsample.gph", replace);
-	   */
-
-			* Modification June 23: saving as text file, easier import to excel .xlsx file;
-			* Modification June 24: Adding in sample endline average;
-			* Modification Sep 5: Adding in joint f-test and equality of treatment test;
-			
-			
-		outreg2 using "${TABLES}fam_`num'_inter_controls", se ctitle(`var'_`sub') bdec(3) sdec(3)
-			addstat(T1 difference, diff1_`sub', T1 pvalue, p1_`sub', T2 difference, diff2_`sub', T2 pvalue, p2_`sub',
-			T3 difference, diff3_`sub', T3 pvalue, p3_`sub', T4 difference, diff4_`sub', T4 pvalue, p4_`sub')
-			title("Table `num'.  Heteregeneity Effects infant outcomes, basic", @title)
-			collabels(, none) mlabels(, dep) 
-			posthead("")  varwidth(30) modelwidth(10)
-			cells(b(star fmt(3)) se(par)) starlevels(* 0.10 ** 0.05 *** 0.001) 
-			scalars(mean_y sd_y prog p_eq) r2 legend obslast 		
-			addnote("All regressions control for gender/age in months and strata dummies. Standard errors clustered at the 	village level.") ; */
-		estimates clear;
-		};
-		*end loop 3 heterogeneity sub;
-	}; 
-	*end loop 2 var of varlist fam`num';	
-}; 
-*end loop num 1;	
-
-				
-/*** ----------------------------------- RUNNING SPECIFICATION WITHOUT COVARIATES ----------------------------------- **;
-
-forval num=1/5 { ;
-
-display "*------------------------family of outcomes `num'---------------------------------";
+	graph combine $momed_hh, xcom
 		
-set more off ;
-    *2. loop over variables within each family ;
-	foreach var of varlist ${fam`num'}  { ;
-	
-		*3. loop over heterogeneity/subgroups;
+*============================
+*    Descriptive graphs
+*============================
 
-		* Change on May 27: replace ymo with teen mom;
-		* change on May 28: replaced teen with Eteen (at baseline);
-		* change Nov: recoded region to hautep (binary);
-		* foreach sub in edlow wlow agey male stunt nosw ymo fborn deprd {;
-		* re-ordered;
-		// foreach sub in agey edlow wlow nosw Eteen fborn male stunt deprd fdsecure foodcope vil_fdsec_bsl vil_fdcop_bsl hautep {;
-		foreach sub in agey edlow Eteen male wlow hautep {;
 
-			reg `var' treatment##`sub' male infant_age_months i.region,  robust cl(grappe); 	
-			testparm 1.treatment 2.treatment 3.treatment 4.treatment;
-			scalar ftest=round(r(p),.001);
-			test 1.treatment =2.treatment =3.treatment =4.treatment;
-			scalar eqtest=round(r(p),.001);
-				
-				foreach x in 1 2 3 4 {;
-				* loop over treatment to get the test of the difference across high and low;				
-				lincom ((`x'.treatment#1.`sub' - 0.treatment#1.`sub') -(`x'.treatment#0.`sub' - 0.treatment#0.`sub'));
-				scalar diff`x'_`sub'=r(estimate);
-				disp diff`x'_`sub';
-				test (`x'.treatment#1.`sub' - 0.treatment#1.`sub') =(`x'.treatment#0.`sub' - 0.treatment#0.`sub');
-				scalar p`x'_`sub'=r(p);
-				};
-			
-			margins r.treatment, over(`sub') contrast post;
-			
-			* Modification June 23: saving as text file, easier import to excel .xlsx file;
-			* Modification June 24: Adding in sample endline average;
-			* Modification Sep 5: Adding in joint f-test and equality of treatment test;
-			outreg2 using "${TABLES}fam_`num'_inter_basic", se ctitle(`var'_`sub') bdec(3) sdec(3)
-			addstat(T1 difference, diff1_`sub', T1 pvalue, p1_`sub', T2 difference, diff2_`sub', T2 pvalue, p2_`sub',
-			T3 difference, diff3_`sub', T3 pvalue, p3_`sub', T4 difference, diff4_`sub', T4 pvalue, p4_`sub', 
-			Joint ftest, ftest, Equality test, eqtest);
-			*added
-			/*title("Table `num'.  Heteregeneity Effects infant outcomes, basic", @title)
-			collabels(, none) mlabels(, dep) 
-			posthead("")  varwidth(30) modelwidth(10)
-			cells(b(star fmt(3)) se(par)) starlevels(* 0.10 ** 0.05 *** 0.001) 
-			scalars(mean_y sd_y prog p_eq) r2 legend obslast 		
-			addnote("All regressions control for gender/age in months and strata dummies. Standard errors clustered at the 	village level.") ; */
-		estimates clear;
-		};
-		*end loop 3 heterogeneity sub;
-	}; 
-	*end loop 2 var of varlist fam`num';	
-}; 
-*end loop num 1;
-*/ 
+twoway (lowess divers_24h infant_age_months, ///
+lcolor(midblue)), ytitle(Food Diversity past 24 hr) ///
+xtitle(Child Age in Months) xline(6 12 18 24 30, ///
+lpattern(dash) lcolor(black)) xmtick(0(6)36)
+graph save "${GRAPHS}For policy report/fooddiv_lowess.gph", replace
 
-/*****************************;
-* Combine T2 & T3, T1 and T4;
-#delimit ;
-gen tx_3 = treatment;
-recode tx_3 (4=1) (3=2);
+twoway (lowess bd_timesate24hr infant_age_months, ///
+lcolor(midblue)), ytitle(Meal Frequency past 24 hr) ///
+xtitle(Child Age in Months) xline(6 12 18 24 30, ///
+lpattern(dash) lcolor(black)) xmtick(0(6)36)
+graph save "${GRAPHS}For policy report/mealfreq_lowess.gph", replace
 
-*1.family of outcomes loop;
-forval num=1/4 {;
+graph combine "${GRAPHS}For policy report/fooddiv_lowess.gph" "${GRAPHS}For policy report/mealfreq_lowess.gph"
 
-display "*------------------------family of outcomes `num'---------------------------------";
-		
-set more off;
-    *2. loop over variables within each family;
-	foreach var of varlist ${fam`num'}  {;
-	
-		*3. loop over heterogeneity/subgroups;
+twoway (lowess home_score_FCI_pca infant_age_months if treatment <4, ///
+lcolor(midblue)) (lowess home_score_FCI_pca infant_age_months if treatment == 4, lcolor(red)), ///
+ytitle(Home score) xtitle(Child Age in Months) xline(6 12 18 24 30, ///
+lpattern(dash) lcolor(black)) xmtick(0(6)36) legend(label(1 "T0-T3") label(2 "T4"))
 
-		foreach sub in edlow wlow agey male stunt nosw ymo fborn deprd {;
+graph save "${GRAPHS}For policy report/homescore_age_lowess.gph", replace
 
-			reg `var' tx_3##`sub' male infant_age_months i.region $controls,  robust cl(grappe); 	
-			
-				foreach x in 1 2 {;
-				* loop over tx_3 to get the test of the difference across high and low;				
-				lincom ((`x'.tx_3#1.`sub' - 0.tx_3#1.`sub') -(`x'.tx_3#0.`sub' - 0.tx_3#0.`sub'));
-				scalar diff`x'_`sub'=r(estimate);
-				disp diff`x'_`sub';
-				test (`x'.tx_3#1.`sub' - 0.tx_3#1.`sub') =(`x'.tx_3#0.`sub' - 0.tx_3#0.`sub');
-				scalar p`x'_`sub'=r(p);
-				};
+global home "totbook source_playobj play3 playactiv"
 
-			margins r.tx_3, over(`sub') contrast post;	
-			outreg2 using "${TABLES}fam_`num'_inter_tx3.xml", excel se ctitle(`var'_`sub') bdec(3) sdec(3) 
-			addstat(T1 difference, diff1_`sub', T1 pvalue, p1_`sub', T2 difference, diff2_`sub', T2 pvalue, p2_`sub');
-	
-	estimates clear;
-	
-		};
-		*end loop 3 heterogeneity sub;
-	}; 
-	*end loop 2 var of varlist fam`num';	
+foreach var of varlist $home {
+local totbook "Total Number of Books"
+local source_playobj "Sources of Play Objects"
+local play3 "More than 3 toys at home"
+local playactiv "Play Activities"
+twoway (lowess `var' infant_age_months if treatment == 0| treatment == 1 | treatment == 2 |treatment == 3, ///
+lcolor(midblue)) (lowess `var' infant_age_months ///
+if treatment == 4, lcolor(red)), ///
+ytitle(``var'') xtitle(Child Age in Months) xline(6 12 18 24 30, ///
+lpattern(dash) lcolor(black)) xmtick(0(6)36) legend(label(1 "T0-T3") label(2 "T4")) name(`var',replace)
 
-}; 
-*end loop num 1;					
-*/;
+graph save "${GRAPHS}For policy report/`var'_lowess.gph", replace
+}
+
+
+graph combine $home , xcom 
+graph save "${GRAPHS}For policy report/All_home_lowess.gph", replace

@@ -687,7 +687,7 @@ use "${All_create}female_All", clear
 keep idmen year wealth_* foodCopingStrat foodSecurityIHS hwater* safewater mother_ed* 
 hhsize HHhead_educ mother_age m_present hhage* HHhead_educ mother_voc depress_tot v_tot 
 logm_height mother_age mother_height helectr hfloor hwater_drinking htrash_disposal
-ac_yesno ac_mpreg1stvisit ac_mpreglastvisit rf_factor pr_factor hygiene_score knowledge_score 
+ac_yesno ac_mpreg1stvisit ac_mpreglastvisit rf_factor pr_factor hygiene_score hygiene_score_pca knowledge_score 
 causediar causetyph causethinkid causenowalk causemalnur
 mddw_score time_own time_study time_chores time_care time_work time_social time_other 
 garbage hwater_available_obs hhandwashing_obs htoilette db13cb*

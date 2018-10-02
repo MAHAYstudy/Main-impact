@@ -161,7 +161,7 @@ global d= 8
 	gl ADMIN_create "${Mada}admin_data/created_data/"		
 	
 	** ANALYSIS FOLDERS
-	global TABLES "/Users/Ling/Desktop/MadaTables/" // "${Mada}analysis/tables/" //
+	global TABLES  "${Mada}analysis/tables/" // "/Users/Ling/Desktop/MadaTables/" //
 	global GRAPHS "${Mada}analysis/graphs/"
 	global All_create "${Mada}analysis/all_create/"
 	}
@@ -283,7 +283,7 @@ global fam1 "hhwash knowledge_score"
 global fam2 "mddw foodsecure"
 
 *Fam 6 : For table 3 , second half (home_score2 in ITT infant)
-global fam6 "hygiene_score mealprep knowledge_score mddw_score foodSecurityIHS "
+global fam6 "hygiene_score hygiene_score_pca mealprep knowledge_score mddw_score foodSecurityIHS "
 /*
 hygiene_score continuous
 knowledge_score continuous
